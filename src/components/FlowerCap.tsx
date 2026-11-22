@@ -1,11 +1,10 @@
 import type { FlowerCapMetal } from '../types/gemstone';
-import { BEAD_R, FLOWER_CAP } from '../utils/ringLayout';
 
 type CapMetal = Exclude<FlowerCapMetal, 'none'>;
 
 /**
- * 비즈 겉(r=16)에 밀착하는 6mm 꽃 비즈 캡 한 쌍 (실버/골드).
- * rotate(angleDeg+90) — 로컬 X = 실(접선).
+ * 비즈 중심(0,0) 기준 고정 좌표 꽃 캡.
+ * 왼쪽 반을 그리고 scale(-1,1)로 실 방향 좌우 대칭 — 삼각함수 부호 반전 버그 제거.
  */
 export function FlowerCaps({
   x,
@@ -20,125 +19,132 @@ export function FlowerCaps({
   readonly uid: string;
   readonly metal: CapMetal;
 }) {
-  const { outerX } = FLOWER_CAP;
   return (
     <g transform={`translate(${x}, ${y}) rotate(${angleDeg + 90})`}>
-      <FlowerCapCup uid={uid} metal={metal} along={-outerX} towardCenter={1} />
-      <FlowerCapCup uid={uid} metal={metal} along={outerX} towardCenter={-1} />
+      <FlowerCapHalf uid={uid} metal={metal} />
+      <g transform="scale(-1, 1)">
+        <FlowerCapHalf uid={uid} metal={metal} />
+      </g>
     </g>
   );
 }
 
 /**
- * 비즈 원 윤곽에 빈틈없이 붙는 한쪽 컵.
- * 로컬 0 = 바깥 실 구멍. 비즈 중심은 towardCenter * -outerX.
+ * 왼쪽 캡 반쪽 (x ≈ -20.2 ~ -7.2).
+ * r=16 비즈 겉면을 바깥에서 안쪽(+X)으로 감싸는 꽃받침 실루엣.
  */
-function FlowerCapCup({
+function FlowerCapHalf({
   uid,
   metal,
-  along,
-  towardCenter,
 }: {
   readonly uid: string;
   readonly metal: CapMetal;
-  readonly along: number;
-  readonly towardCenter: 1 | -1;
 }) {
-  const { halfH, outerX } = FLOWER_CAP;
-  const grad = `${uid}-cap-${metal}`;
-  const core = `${uid}-cap-core-${metal}`;
+  const stroke = metal === 'gold' ? '#8A7038' : '#5A564E';
+  const strokeDark = metal === 'gold' ? '#6E5420' : '#4A4640';
+  const grad = `url(#${uid}-cap-${metal})`;
+  const core = `url(#${uid}-cap-core-${metal})`;
 
-  // 비즈 중심(로컬): towardCenter 반대쪽으로 outerX
-  // 겉면 접점(실 축): towardCenter * (outerX - BEAD_R) = ±5.5
-  const contact = towardCenter * (outerX - BEAD_R);
+  // 본체: 바깥 실구멍(-20.2) → 비즈 겉(-16 부근) → 안쪽 감쌈(-7.2)
+  const bodyPath = [
+    'M -20.2 -3.4',
+    'C -19.6 -11.2, -17.8 -13.5, -15.2 -13.4',
+    'Q -12.4 -12.2, -10.2 -9.6',
+    'Q -8.2 -6.8, -7.2 -3.2',
+    'L -7.2 3.2',
+    'Q -8.2 6.8, -10.2 9.6',
+    'Q -12.4 12.2, -15.2 13.4',
+    'C -17.8 13.5, -19.6 11.2, -20.2 3.4',
+    'Z',
+  ].join(' ');
 
-  // 비즈 겉 원호 위 점들 (비즈 중심 기준 각도 → 로컬 좌표)
-  // 로컬: beadCenterX = -towardCenter * outerX  (along 원점 기준)
-  const cx = -towardCenter * outerX;
-  const arc = (deg: number): { x: number; y: number } => {
-    const rad = (deg * Math.PI) / 180;
-    // towardCenter=+1(왼쪽 캡): 원의 오른쪽 반구를 감쌈 → 각도 약 -60~60 where 0 is +X from bead
-    // towardCenter=-1(오른쪽 캡): 원의 왼쪽 반구
-    const base = towardCenter === 1 ? 0 : Math.PI;
-    return {
-      x: cx + BEAD_R * Math.cos(base + rad * towardCenter),
-      y: BEAD_R * Math.sin(rad),
-    };
-  };
-
-  const top = arc(-58);
-  const midTop = arc(-28);
-  const midBot = arc(28);
-  const bot = arc(58);
-  // 실 축 겉면 접점
-  const seam = { x: contact, y: 0 };
+  // 비즈 겉면 밀착 그림자 (본체보다 살짝 바깥·얇게)
+  const shadowPath = [
+    'M -16.4 -11.8',
+    'Q -12.8 -10.5, -10.4 -7.2',
+    'Q -8.4 -4.2, -7.6 -1.2',
+    'L -7.6 1.2',
+    'Q -8.4 4.2, -10.4 7.2',
+    'Q -12.8 10.5, -16.4 11.8',
+    'Q -15.2 6.5, -15.0 0',
+    'Q -15.2 -6.5, -16.4 -11.8',
+    'Z',
+  ].join(' ');
 
   return (
-    <g transform={`translate(${along}, 0)`}>
-      {/* 비즈 겉면 밀착 틈 */}
+    <g>
+      <path d={shadowPath} fill="rgba(0,0,0,0.18)" />
+
+      <path d={bodyPath} fill={grad} stroke={stroke} strokeWidth="0.5" />
+
+      {/* 위 꽃잎 — 겉면(-16)에서 안쪽(-7.2)으로 */}
       <path
         d={[
-          `M ${seam.x} ${-2}`,
-          `Q ${midTop.x} ${midTop.y} ${top.x} ${top.y}`,
-          `L ${top.x + towardCenter * 0.8} ${top.y}`,
-          `Q ${midTop.x + towardCenter * 0.6} ${midTop.y} ${seam.x + towardCenter * 0.7} 0`,
-          `Q ${midBot.x + towardCenter * 0.6} ${midBot.y} ${bot.x + towardCenter * 0.8} ${bot.y}`,
-          `L ${bot.x} ${bot.y}`,
-          `Q ${midBot.x} ${midBot.y} ${seam.x} ${2}`,
-          `Z`,
+          'M -19.2 0',
+          'Q -17.5 -8.5, -14.8 -12.8',
+          'Q -11.5 -11.2, -8.8 -7.5',
+          'Q -7.5 -4.0, -7.4 -1.0',
+          'Q -10.5 -3.5, -14.0 -2.2',
+          'Q -17.0 -1.2, -19.2 0',
+          'Z',
         ].join(' ')}
-        fill="rgba(0,0,0,0.2)"
-      />
-
-      {/* 본체 — 바깥 구멍 → 비즈 겉 원호에 밀착 */}
-      <path
-        d={[
-          `M 0 ${-3.4}`,
-          `C ${towardCenter * 2} ${-halfH * 0.5}, ${top.x * 0.35} ${top.y}, ${top.x} ${top.y}`,
-          `Q ${midTop.x} ${midTop.y} ${seam.x} ${seam.y - 0.2}`,
-          `L ${seam.x} ${seam.y + 0.2}`,
-          `Q ${midBot.x} ${midBot.y} ${bot.x} ${bot.y}`,
-          `C ${bot.x * 0.35} ${bot.y}, ${towardCenter * 2} ${halfH * 0.5}, 0 ${3.4}`,
-          `Z`,
-        ].join(' ')}
-        fill={`url(#${grad})`}
-        stroke={metal === 'gold' ? '#8A7038' : '#5A564E'}
-        strokeWidth="0.5"
-      />
-
-      {/* 위·아래 꽃잎 — 겉 원호를 따라 */}
-      <path
-        d={`M 0 0 Q ${towardCenter * 2.2} ${-halfH * 0.4} ${top.x} ${top.y} Q ${midTop.x} ${midTop.y * 0.5} ${towardCenter * 1.4} 0 Z`}
-        fill={`url(#${grad})`}
-        stroke={metal === 'gold' ? '#8A7038' : '#5A564E'}
-        strokeWidth="0.45"
-      />
-      <path
-        d={`M 0 0 Q ${towardCenter * 2.2} ${halfH * 0.4} ${bot.x} ${bot.y} Q ${midBot.x} ${midBot.y * 0.5} ${towardCenter * 1.4} 0 Z`}
-        fill={`url(#${grad})`}
-        stroke={metal === 'gold' ? '#8A7038' : '#5A564E'}
+        fill={grad}
+        stroke={stroke}
         strokeWidth="0.45"
       />
 
-      {/* 바깥 림 + 실 구멍 */}
+      {/* 아래 꽃잎 */}
+      <path
+        d={[
+          'M -19.2 0',
+          'Q -17.5 8.5, -14.8 12.8',
+          'Q -11.5 11.2, -8.8 7.5',
+          'Q -7.5 4.0, -7.4 1.0',
+          'Q -10.5 3.5, -14.0 2.2',
+          'Q -17.0 1.2, -19.2 0',
+          'Z',
+        ].join(' ')}
+        fill={grad}
+        stroke={stroke}
+        strokeWidth="0.45"
+      />
+
+      {/* 중앙 보조 꽃잎 */}
+      <path
+        d={[
+          'M -19.6 0',
+          'Q -16.5 -5.5, -12.5 -6.8',
+          'Q -9.5 -5.2, -7.8 -1.8',
+          'L -7.8 1.8',
+          'Q -9.5 5.2, -12.5 6.8',
+          'Q -16.5 5.5, -19.6 0',
+          'Z',
+        ].join(' ')}
+        fill={grad}
+        stroke={stroke}
+        strokeWidth="0.4"
+        opacity="0.92"
+      />
+
+      {/* 바깥 메탈 목 + 실 구멍 (−20.2) */}
       <ellipse
-        cx={towardCenter * 0.45}
+        cx={-20.0}
         cy={0}
-        rx={3.3}
-        ry={4.5}
-        fill={`url(#${core})`}
-        stroke={metal === 'gold' ? '#6E5420' : '#4A4640'}
+        rx={3.2}
+        ry={4.4}
+        fill={core}
+        stroke={strokeDark}
         strokeWidth="0.5"
       />
       <ellipse
-        cx={towardCenter * -0.5}
-        cy={-1.7}
-        rx={1.45}
-        ry={1.1}
+        cx={-20.6}
+        cy={-1.6}
+        rx={1.35}
+        ry={1.05}
         fill="rgba(255,255,255,0.4)"
       />
-      <circle cx={0} cy={0} r={1.85} fill="#2A2826" />
-      <circle cx={0} cy={0} r={1.15} fill="#1A1816" />
+      <circle cx={-20.2} cy={0} r={1.85} fill="#2A2826" />
+      <circle cx={-20.2} cy={0} r={1.15} fill="#1A1816" />
     </g>
   );
 }
