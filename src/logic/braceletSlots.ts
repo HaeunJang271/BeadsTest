@@ -219,7 +219,7 @@ export function defaultBracelet(gem: Gemstone): BraceletConfig {
 /**
  * 인트로에서 바로 커스텀 진입용 기본값.
  */
-export function blankCustomBracelet(gemId: GemstoneId = 'clear_crystal'): BraceletConfig {
+export function blankCustomBracelet(gemId: GemstoneId = 'moonstone'): BraceletConfig {
   return enterCustomMode(defaultBracelet(getGemstone(gemId)));
 }
 

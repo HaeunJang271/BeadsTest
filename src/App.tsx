@@ -58,8 +58,8 @@ export default function App() {
   const startCustom = useCallback(() => {
     const gem = getGemstone('clear_crystal');
     setResultGem(gem);
-    setBracelet(blankCustomBracelet('clear_crystal'));
-    setBrush({ kind: 'gem', gemId: 'clear_crystal' });
+    setBracelet(blankCustomBracelet('moonstone'));
+    setBrush({ kind: 'gem', gemId: 'moonstone' });
     setView('result');
     log('info', '직접 커스텀 시작');
   }, []);

@@ -2,9 +2,26 @@ import type { FlowerCapMetal } from '../types/gemstone';
 
 type CapMetal = Exclude<FlowerCapMetal, 'none'>;
 
+/** r=16 원석 표면에 밀착하는 왼쪽 캡 path (비즈 중심 0,0) */
+const CAP_HALF_PATH = [
+  'M -20.2 -3.6',
+  'C -17.5 -4.2, -15.5 -6.2, -13.0 -9.6',
+  'Q -11.2 -11.8, -9.5 -13.0',
+  'Q -11.5 -8.5, -12.2 -7.0',
+  'Q -9.8 -5.8, -8.2 -4.8',
+  'Q -10.8 -3.4, -11.5 -2.2',
+  'Q -8.8 -1.1, -7.2 0',
+  'Q -8.8 1.1, -11.5 2.2',
+  'Q -10.8 3.4, -8.2 4.8',
+  'Q -9.8 5.8, -12.2 7.0',
+  'Q -11.5 8.5, -9.5 13.0',
+  'Q -11.2 11.8, -13.0 9.6',
+  'C -15.5 6.2, -17.5 4.2, -20.2 3.6',
+  'Z',
+].join(' ');
+
 /**
- * 비즈 중심(0,0) 기준 고정 좌표 꽃 캡.
- * 왼쪽 반을 그리고 scale(-1,1)로 실 방향 좌우 대칭 — 삼각함수 부호 반전 버그 제거.
+ * 비즈 중심 고정 좌표 꽃 캡 — Half + scale(-1,1) 대칭.
  */
 export function FlowerCaps({
   x,
@@ -29,10 +46,6 @@ export function FlowerCaps({
   );
 }
 
-/**
- * 왼쪽 캡 반쪽 (x ≈ -20.2 ~ -7.2).
- * r=16 비즈 겉면을 바깥에서 안쪽(+X)으로 감싸는 꽃받침 실루엣.
- */
 function FlowerCapHalf({
   uid,
   metal,
@@ -45,106 +58,55 @@ function FlowerCapHalf({
   const grad = `url(#${uid}-cap-${metal})`;
   const core = `url(#${uid}-cap-core-${metal})`;
 
-  // 본체: 바깥 실구멍(-20.2) → 비즈 겉(-16 부근) → 안쪽 감쌈(-7.2)
-  const bodyPath = [
-    'M -20.2 -3.4',
-    'C -19.6 -11.2, -17.8 -13.5, -15.2 -13.4',
-    'Q -12.4 -12.2, -10.2 -9.6',
-    'Q -8.2 -6.8, -7.2 -3.2',
-    'L -7.2 3.2',
-    'Q -8.2 6.8, -10.2 9.6',
-    'Q -12.4 12.2, -15.2 13.4',
-    'C -17.8 13.5, -19.6 11.2, -20.2 3.4',
-    'Z',
-  ].join(' ');
-
-  // 비즈 겉면 밀착 그림자 (본체보다 살짝 바깥·얇게)
-  const shadowPath = [
-    'M -16.4 -11.8',
-    'Q -12.8 -10.5, -10.4 -7.2',
-    'Q -8.4 -4.2, -7.6 -1.2',
-    'L -7.6 1.2',
-    'Q -8.4 4.2, -10.4 7.2',
-    'Q -12.8 10.5, -16.4 11.8',
-    'Q -15.2 6.5, -15.0 0',
-    'Q -15.2 -6.5, -16.4 -11.8',
-    'Z',
-  ].join(' ');
-
   return (
     <g>
-      <path d={shadowPath} fill="rgba(0,0,0,0.18)" />
-
-      <path d={bodyPath} fill={grad} stroke={stroke} strokeWidth="0.5" />
-
-      {/* 위 꽃잎 — 겉면(-16)에서 안쪽(-7.2)으로 */}
       <path
-        d={[
-          'M -19.2 0',
-          'Q -17.5 -8.5, -14.8 -12.8',
-          'Q -11.5 -11.2, -8.8 -7.5',
-          'Q -7.5 -4.0, -7.4 -1.0',
-          'Q -10.5 -3.5, -14.0 -2.2',
-          'Q -17.0 -1.2, -19.2 0',
-          'Z',
-        ].join(' ')}
-        fill={grad}
-        stroke={stroke}
-        strokeWidth="0.45"
+        d={CAP_HALF_PATH}
+        fill="rgba(0,0,0,0.18)"
+        transform="translate(-0.45, 0.35)"
       />
+      <path d={CAP_HALF_PATH} fill={grad} stroke={stroke} strokeWidth="0.5" />
 
-      {/* 아래 꽃잎 */}
+      {/* 꽃잎 주름선 (x=-19 → 끝) */}
       <path
-        d={[
-          'M -19.2 0',
-          'Q -17.5 8.5, -14.8 12.8',
-          'Q -11.5 11.2, -8.8 7.5',
-          'Q -7.5 4.0, -7.4 1.0',
-          'Q -10.5 3.5, -14.0 2.2',
-          'Q -17.0 1.2, -19.2 0',
-          'Z',
-        ].join(' ')}
-        fill={grad}
-        stroke={stroke}
+        d="M -19 -1.2 Q -14.5 -6.5, -10.2 -11.2"
+        fill="none"
+        stroke={strokeDark}
         strokeWidth="0.45"
+        opacity="0.55"
       />
-
-      {/* 중앙 보조 꽃잎 */}
       <path
-        d={[
-          'M -19.6 0',
-          'Q -16.5 -5.5, -12.5 -6.8',
-          'Q -9.5 -5.2, -7.8 -1.8',
-          'L -7.8 1.8',
-          'Q -9.5 5.2, -12.5 6.8',
-          'Q -16.5 5.5, -19.6 0',
-          'Z',
-        ].join(' ')}
-        fill={grad}
-        stroke={stroke}
+        d="M -19 0 Q -13.5 0, -8.5 0"
+        fill="none"
+        stroke={strokeDark}
         strokeWidth="0.4"
-        opacity="0.92"
+        opacity="0.4"
+      />
+      <path
+        d="M -19 1.2 Q -14.5 6.5, -10.2 11.2"
+        fill="none"
+        stroke={strokeDark}
+        strokeWidth="0.45"
+        opacity="0.55"
       />
 
-      {/* 바깥 메탈 목 + 실 구멍 (−20.2) */}
+      {/* 바깥 림 — 검은 구멍 없음 */}
       <ellipse
-        cx={-20.0}
+        cx={-19.3}
         cy={0}
-        rx={3.2}
-        ry={4.4}
+        rx={1.35}
+        ry={3.7}
         fill={core}
         stroke={strokeDark}
-        strokeWidth="0.5"
+        strokeWidth="0.45"
       />
       <ellipse
-        cx={-20.6}
-        cy={-1.6}
-        rx={1.35}
-        ry={1.05}
-        fill="rgba(255,255,255,0.4)"
+        cx={-19.7}
+        cy={-1.4}
+        rx={0.55}
+        ry={1.1}
+        fill="rgba(255,255,255,0.35)"
       />
-      <circle cx={-20.2} cy={0} r={1.85} fill="#2A2826" />
-      <circle cx={-20.2} cy={0} r={1.15} fill="#1A1816" />
     </g>
   );
 }

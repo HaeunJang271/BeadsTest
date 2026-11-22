@@ -1,6 +1,7 @@
 import { useId, useMemo } from 'react';
 import { STORE } from '../config/store';
 import { getGemstone } from '../data/gemstones';
+import { donutMetalLabel } from '../logic/braceletSlots';
 import type { BraceletConfig, CustomBrush, GemstoneId } from '../types/gemstone';
 import {
   BEAD_R,
@@ -15,6 +16,8 @@ interface BeadRingPreviewProps {
   readonly config: BraceletConfig;
   readonly brush?: CustomBrush | null;
   readonly onPaintBead?: (index: number) => void;
+  /** false면 하단 스펙 캡션 숨김 (인트로 히어로용) */
+  readonly showCaption?: boolean;
 }
 
 /**
@@ -24,6 +27,7 @@ export function BeadRingPreview({
   config,
   brush = null,
   onPaintBead,
+  showCaption = true,
 }: BeadRingPreviewProps) {
   const uid = useId().replace(/:/g, '');
   const size = 340;
@@ -47,7 +51,9 @@ export function BeadRingPreview({
 
   const caption = [
     `${STORE.beadMm}mm · ${STORE.beadCount}알`,
-    config.donutMetal !== 'none' ? `도넛 ${config.donutMetal}` : null,
+    config.donutMetal !== 'none'
+      ? `도넛 ${donutMetalLabel(config.donutMetal)}`
+      : null,
     '0.8mm 우레탄 1겹',
   ]
     .filter(Boolean)
@@ -92,10 +98,12 @@ export function BeadRingPreview({
           );
         })}
       </svg>
-      <p className="bead-ring__caption ui-label">
-        {caption}
-        {interactive && brush ? ' · 탭하여 칠하기' : ''}
-      </p>
+      {showCaption ? (
+        <p className="bead-ring__caption ui-label">
+          {caption}
+          {interactive && brush ? ' · 탭하여 칠하기' : ''}
+        </p>
+      ) : null}
     </div>
   );
 }
@@ -147,10 +155,11 @@ function GemBead({
 
   return (
     <g
+      className={interactive ? 'gem-bead--interactive' : undefined}
       role={interactive ? 'button' : undefined}
       tabIndex={interactive ? 0 : undefined}
       aria-label={interactive ? `${beadIndex + 1}번 알` : undefined}
-      style={interactive ? { cursor: 'pointer' } : undefined}
+      style={interactive ? { cursor: 'pointer', outline: 'none' } : undefined}
       onClick={interactive && onPaint ? () => onPaint(beadIndex) : undefined}
       onKeyDown={
         interactive && onPaint
@@ -181,12 +190,31 @@ function GemBead({
       />
       <circle cx={x} cy={y} r={r} fill={`url(#${uid}-shade-${gemId})`} />
       <circle cx={x} cy={y} r={r * 0.92} fill={`url(#${uid}-shine-${gemId})`} />
+      {/* 상단 스펙큘러 */}
       <ellipse
         cx={x - r * 0.32}
         cy={y - r * 0.38}
         rx={r * 0.26}
         ry={r * 0.16}
         fill="rgba(255,255,255,0.45)"
+      />
+      {/* 내부 반사광 — 하단 오른쪽, -25° */}
+      <ellipse
+        cx={x + r * 0.28}
+        cy={y + r * 0.22}
+        rx={r * 0.34}
+        ry={r * 0.18}
+        fill="rgba(255,255,255,0.24)"
+        transform={`rotate(-25 ${x + r * 0.28} ${y + r * 0.22})`}
+      />
+      {/* 얇은 내부 테두리 하이라이트 */}
+      <circle
+        cx={x}
+        cy={y}
+        r={r - 0.6}
+        fill="none"
+        stroke="rgba(255,255,255,0.35)"
+        strokeWidth="0.6"
       />
       {flowerCap !== 'none' ? (
         <FlowerCaps

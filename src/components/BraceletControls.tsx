@@ -1,4 +1,4 @@
-import { GEMSTONES } from '../data/gemstones';
+import { GEMSTONES, getGemstone } from '../data/gemstones';
 import {
   calcPrice,
   enterCustomMode,
@@ -15,6 +15,7 @@ import type {
   GemstoneId,
 } from '../types/gemstone';
 import { formatPrice, patternLabel } from '../utils/format';
+import { GemSwatch } from './GemSwatch';
 
 interface BraceletControlsProps {
   readonly config: BraceletConfig;
@@ -32,7 +33,7 @@ const CAP_METALS: readonly FlowerCapMetal[] = ['none', 'silver', 'gold'];
 const SPACINGS: readonly DonutSpacing[] = ['accent', 'every3', 'all'];
 
 /**
- * 패턴·브러시·도넛·주문 컨트롤.
+ * 패턴·브러시·도넛·주문 컨트롤 (셀렉트샵 톤).
  */
 export function BraceletControls({
   config,
@@ -45,8 +46,10 @@ export function BraceletControls({
 }: BraceletControlsProps) {
   const price = calcPrice(config);
   const isCustom = config.pattern === 'custom';
-  const fillGem =
+  const brushGemId =
     brush.kind === 'gem' ? brush.gemId : config.primaryId;
+  const brushName = getGemstone(brushGemId).nameKo;
+  const secondaryName = getGemstone(config.secondaryId).nameKo;
 
   return (
     <section className="bracelet-controls" aria-label="팔찌 커스텀">
@@ -79,74 +82,79 @@ export function BraceletControls({
       </fieldset>
 
       {isCustom ? (
-        <fieldset className="ctrl-block">
-          <legend className="ui-label">브러시 — 고른 뒤 알을 탭</legend>
-          <div className="chip-row chip-row--wrap">
-            {GEMSTONES.map((g) => (
+        <>
+          <fieldset className="ctrl-block">
+            <legend className="ui-label">
+              원석 브러시 · {brushName}
+            </legend>
+            <div className="swatch-row">
+              {GEMSTONES.map((g) => (
+                <GemSwatch
+                  key={g.id}
+                  gem={g}
+                  selected={brush.kind === 'gem' && brush.gemId === g.id}
+                  onClick={() => onBrushChange({ kind: 'gem', gemId: g.id })}
+                />
+              ))}
+            </div>
+          </fieldset>
+
+          <fieldset className="ctrl-block">
+            <legend className="ui-label">꽃 비즈 캡</legend>
+            <div className="chip-row chip-row--wrap">
               <button
-                key={g.id}
                 type="button"
-                className={`chip chip--swatch${brush.kind === 'gem' && brush.gemId === g.id ? ' is-on' : ''}`}
-                onClick={() => onBrushChange({ kind: 'gem', gemId: g.id })}
+                className={`chip${brush.kind === 'capOn' && brush.metal === 'silver' ? ' is-on' : ''}`}
+                onClick={() => onBrushChange({ kind: 'capOn', metal: 'silver' })}
               >
-                <span className="chip__dot" style={{ background: g.visual.base }} />
-                <span>{g.nameKo.replace(' / 백수정', '')}</span>
+                실버
               </button>
-            ))}
+              <button
+                type="button"
+                className={`chip${brush.kind === 'capOn' && brush.metal === 'gold' ? ' is-on' : ''}`}
+                onClick={() => onBrushChange({ kind: 'capOn', metal: 'gold' })}
+              >
+                골드
+              </button>
+              <button
+                type="button"
+                className={`chip${brush.kind === 'capOff' ? ' is-on' : ''}`}
+                onClick={() => onBrushChange({ kind: 'capOff' })}
+              >
+                벗기기
+              </button>
+            </div>
+          </fieldset>
+
+          <div className="text-actions">
             <button
               type="button"
-              className={`chip${brush.kind === 'capOn' && brush.metal === 'silver' ? ' is-on' : ''}`}
-              onClick={() => onBrushChange({ kind: 'capOn', metal: 'silver' })}
-            >
-              꽃 캡 실버
-            </button>
-            <button
-              type="button"
-              className={`chip${brush.kind === 'capOn' && brush.metal === 'gold' ? ' is-on' : ''}`}
-              onClick={() => onBrushChange({ kind: 'capOn', metal: 'gold' })}
-            >
-              꽃 캡 골드
-            </button>
-            <button
-              type="button"
-              className={`chip${brush.kind === 'capOff' ? ' is-on' : ''}`}
-              onClick={() => onBrushChange({ kind: 'capOff' })}
-            >
-              꽃 캡 벗기기
-            </button>
-          </div>
-          <div className="chip-row chip-row--wrap" style={{ marginTop: 8 }}>
-            <button
-              type="button"
-              className="chip"
+              className="text-action"
               onClick={() => onChange(mirrorSlotsHorizontal(config))}
             >
               좌우 대칭 맞추기
             </button>
             <button
               type="button"
-              className="chip"
-              onClick={() => onChange(fillAllWithGem(config, fillGem))}
+              className="text-action"
+              onClick={() => onChange(fillAllWithGem(config, brushGemId))}
             >
-              현재 돌로 전체 채우기
+              전체 채우기
             </button>
           </div>
-        </fieldset>
+        </>
       ) : (
         <>
           <fieldset className="ctrl-block">
-            <legend className="ui-label">보조석</legend>
-            <div className="chip-row chip-row--wrap">
+            <legend className="ui-label">보조석 · {secondaryName}</legend>
+            <div className="swatch-row">
               {GEMSTONES.map((g) => (
-                <button
+                <GemSwatch
                   key={g.id}
-                  type="button"
-                  className={`chip chip--swatch${config.secondaryId === g.id ? ' is-on' : ''}`}
+                  gem={g}
+                  selected={config.secondaryId === g.id}
                   onClick={() => selectSecondary(g.id)}
-                >
-                  <span className="chip__dot" style={{ background: g.visual.base }} />
-                  <span>{g.nameKo.replace(' / 백수정', '')}</span>
-                </button>
+                />
               ))}
             </div>
           </fieldset>

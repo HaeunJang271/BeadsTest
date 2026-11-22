@@ -1,4 +1,8 @@
 import { STORE } from '../config/store';
+import { getGemstone } from '../data/gemstones';
+import { defaultBracelet } from '../logic/braceletSlots';
+import type { BraceletConfig } from '../types/gemstone';
+import { BeadRingPreview } from './BeadRingPreview';
 
 interface IntroScreenProps {
   readonly onStart: () => void;
@@ -6,8 +10,19 @@ interface IntroScreenProps {
   readonly onStartCustom: () => void;
 }
 
+/** 인트로 대표 팔찌: 문스톤 × 라벤더 교차 + 실버 도넛(포인트) */
+const INTRO_BRACELET: BraceletConfig = {
+  ...defaultBracelet(getGemstone('moonstone')),
+  primaryId: 'moonstone',
+  secondaryId: 'lavender_amethyst',
+  pattern: 'alternate',
+  donutMetal: 'silver',
+  donutSpacing: 'accent',
+  presetFlowerCap: 'none',
+};
+
 /**
- * 첫 화면 — 편집샵 톤 인트로.
+ * 첫 화면 — 감성 주얼리 셀렉트샵 톤 인트로.
  */
 export function IntroScreen({
   onStart,
@@ -17,11 +32,7 @@ export function IntroScreen({
   return (
     <section className="intro">
       <p className="ui-label intro__kicker">{STORE.instagramHandle}</p>
-
       <h1 className="intro__brand">{STORE.brandKo}</h1>
-      <p className="intro__en italic-num">{STORE.brandEn}</p>
-
-      <hr className="intro__rule" />
 
       <p className="intro__lead">
         원석 팔찌 추천과 실시간 비즈 커스텀.
@@ -29,20 +40,9 @@ export function IntroScreen({
         8mm 원석, 0.8mm 투명 우레탄줄 한 겹으로 맞춥니다.
       </p>
 
-      <dl className="intro__meta">
-        <div className="intro__meta-row">
-          <dt>Step 01</dt>
-          <dd>다섯 문항으로 맞는 돌을 고릅니다.</dd>
-        </div>
-        <div className="intro__meta-row">
-          <dt>Step 02</dt>
-          <dd>결과 티켓과 SVG 팔찌로 조합을 만듭니다.</dd>
-        </div>
-        <div className="intro__meta-row">
-          <dt>Step 03</dt>
-          <dd>문구를 복사해 DM으로 주문합니다.</dd>
-        </div>
-      </dl>
+      <div className="intro__hero">
+        <BeadRingPreview config={INTRO_BRACELET} showCaption={false} />
+      </div>
 
       <div className="intro__actions">
         <button type="button" className="btn-primary" onClick={onStart}>
@@ -51,7 +51,7 @@ export function IntroScreen({
         <button type="button" className="btn-secondary" onClick={onStartCustom}>
           직접 한 알씩 커스텀
         </button>
-        <button type="button" className="btn-ghost" onClick={onOpenCatalog}>
+        <button type="button" className="intro__link" onClick={onOpenCatalog}>
           9종 도감 보기
         </button>
       </div>

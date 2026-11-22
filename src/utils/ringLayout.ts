@@ -14,18 +14,17 @@ export const DONUT_WIDTH = 5.5;
 
 /**
  * 6mm 꽃 비즈 캡 — 비즈 겉 윤곽을 감싸는 컵.
- * outerX: 구슬 끝(±16)에서 바깥으로 5.5px 돌출된 캡 끝 (±21.5)
- * halfH: r=16 바깥 곡선보다 약간 넓은 반높이
- * capNeck: 한쪽 캡 목이 차지하는 여유 폭 → 캡 비즈 width = BEAD_WIDTH + 2*capNeck
+ * outerX: 캡 끝 (±20.2)
+ * CAPPED_BEAD_WIDTH: BEAD_WIDTH + 9 = 41 (겹침 방지)
  */
 export const FLOWER_CAP = {
-  outerX: 21.5,
+  outerX: 20.2,
   halfH: 13.5,
-  capNeck: 7,
+  capNeck: 4.5,
 } as const;
 
-/** 꽃 캡 비즈 슬롯 폭 (±23 확보, 옆 비즈·도넛과 비겹침) */
-export const CAPPED_BEAD_WIDTH = BEAD_WIDTH + FLOWER_CAP.capNeck * 2;
+/** 꽃 캡 비즈 슬롯 폭 */
+export const CAPPED_BEAD_WIDTH = BEAD_WIDTH + 9;
 
 export type RingBeadItem = {
   readonly kind: 'bead';

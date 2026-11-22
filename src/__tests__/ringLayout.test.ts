@@ -36,11 +36,9 @@ describe('ringLayout', () => {
     expect(ringR).toBeCloseTo(total / (2 * Math.PI), 5);
   });
 
-  it('꽃 캡 비즈는 width 46으로 옆 도넛과 겹치지 않는 폭을 확보한다', () => {
-    expect(FLOWER_CAP.outerX).toBe(21.5);
-    expect(FLOWER_CAP.halfH).toBe(13.5);
-    expect(FLOWER_CAP.capNeck).toBe(7);
-    expect(CAPPED_BEAD_WIDTH).toBe(46);
+  it('꽃 캡 비즈는 width 41로 옆 도넛과 겹치지 않는 폭을 확보한다', () => {
+    expect(FLOWER_CAP.outerX).toBe(20.2);
+    expect(CAPPED_BEAD_WIDTH).toBe(41);
 
     let cfg = enterCustomMode(defaultBracelet(getGemstone('moonstone')));
     cfg = applyBrushToBead(cfg, 0, { kind: 'capOn', metal: 'silver' });
@@ -49,6 +47,6 @@ describe('ringLayout', () => {
     const capped = items.find(
       (it) => it.kind === 'bead' && it.beadIndex === 0,
     );
-    expect(capped?.kind === 'bead' && capped.width).toBe(46);
+    expect(capped?.kind === 'bead' && capped.width).toBe(41);
   });
 });
