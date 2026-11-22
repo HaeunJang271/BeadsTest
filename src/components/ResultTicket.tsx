@@ -52,13 +52,13 @@ export function ResultTicket({ gemstone }: ResultTicketProps) {
 function Stamp() {
   return (
     <svg className="result-ticket__stamp" viewBox="0 0 72 72" width="56" height="56" aria-hidden="true">
-      <circle cx="36" cy="36" r="33" fill="none" stroke="var(--gold)" strokeWidth="1" />
-      <circle cx="36" cy="36" r="28" fill="none" stroke="var(--gold)" strokeWidth="0.6" />
+      <circle cx="36" cy="36" r="33" fill="none" stroke="var(--ink)" strokeWidth="1" />
+      <circle cx="36" cy="36" r="28" fill="none" stroke="var(--ink)" strokeWidth="0.6" />
       <text
         x="36"
         y="34"
         textAnchor="middle"
-        fill="var(--gold)"
+        fill="var(--ink)"
         fontSize="8"
         fontFamily="var(--font-ui)"
       >
@@ -68,7 +68,7 @@ function Stamp() {
         x="36"
         y="46"
         textAnchor="middle"
-        fill="var(--gold)"
+        fill="var(--ink)"
         fontSize="7"
         fontFamily="var(--font-ui)"
       >

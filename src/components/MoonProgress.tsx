@@ -36,25 +36,24 @@ export function MoonProgress({ step, total }: MoonProgressProps) {
           y1="14"
           x2="266"
           y2="14"
-          stroke="var(--gold)"
+          stroke="var(--line)"
           strokeWidth="1"
-          opacity="0.45"
         />
         {phases.map((n) => {
           const cx = 14 + ((n - 1) / span) * 252;
           const filled = n <= step;
           return (
             <g key={n} transform={`translate(${cx}, 14)`}>
-              <circle r="7" fill="none" stroke="var(--gold)" strokeWidth="1" />
+              <circle r="7" fill="none" stroke="var(--ink)" strokeWidth="1" />
               {filled ? (
                 <circle
                   r="5.5"
-                  fill="var(--gold)"
-                  opacity={n === step ? 0.75 : 0.9}
+                  fill="var(--ink)"
+                  opacity={n === step ? 0.7 : 1}
                   clipPath={n === step ? `url(#moon-phase-${n})` : undefined}
                 />
               ) : (
-                <circle r="5.5" fill="var(--gold)" opacity="0.12" />
+                <circle r="5.5" fill="var(--ink)" opacity="0.08" />
               )}
             </g>
           );

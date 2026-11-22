@@ -31,9 +31,9 @@ export function BeadRingPreview({ config }: BeadRingPreviewProps) {
             <GemGradient key={id} id={id} />
           ))}
           <radialGradient id="flower-grad" cx="35%" cy="30%" r="65%">
-            <stop offset="0%" stopColor="#F5EFE6" />
-            <stop offset="55%" stopColor="#E8DFD0" />
-            <stop offset="100%" stopColor="#C9A96E" />
+            <stop offset="0%" stopColor="#FFFFFF" />
+            <stop offset="55%" stopColor="#F0EEE8" />
+            <stop offset="100%" stopColor="#C8C4BA" />
           </radialGradient>
         </defs>
 
@@ -43,7 +43,7 @@ export function BeadRingPreview({ config }: BeadRingPreviewProps) {
           cy={cy}
           r={ringR}
           fill="none"
-          stroke="rgba(201,169,110,0.35)"
+          stroke="rgba(17,17,17,0.18)"
           strokeWidth="1.2"
         />
 
@@ -84,7 +84,7 @@ export function BeadRingPreview({ config }: BeadRingPreviewProps) {
           y={cy - 6}
           textAnchor="middle"
           className="bead-ring__center-label"
-          fill="var(--ink-muted)"
+          fill="var(--muted)"
           fontSize="11"
         >
           {STORE.beadMm}mm · {STORE.beadCount}알
@@ -93,7 +93,7 @@ export function BeadRingPreview({ config }: BeadRingPreviewProps) {
           x={cx}
           y={cy + 10}
           textAnchor="middle"
-          fill="var(--ink-muted)"
+          fill="var(--muted)"
           fontSize="10"
         >
           0.8mm 우레탄 1겹
@@ -139,12 +139,12 @@ function FlowerSpacer({
             ry={r * 0.22}
             transform={`rotate(${(a * 180) / Math.PI} ${px} ${py})`}
             fill="url(#flower-grad)"
-            stroke="#C9A96E"
+            stroke="#111111"
             strokeWidth="0.4"
           />
         );
       })}
-      <circle r={r * 0.22} fill="#C9A96E" />
+      <circle r={r * 0.22} fill="#111111" />
     </g>
   );
 }

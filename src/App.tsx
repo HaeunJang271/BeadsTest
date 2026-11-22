@@ -98,7 +98,6 @@ export default function App() {
 
   return (
     <div className="app-shell">
-      <div className="paper-grain" aria-hidden="true" />
       <header className="topbar">
         <button
           type="button"

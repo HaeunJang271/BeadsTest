@@ -1,9 +1,9 @@
 /* result ticket */
 .result-ticket {
-  border: 1px solid var(--gold);
-  border-radius: 2px;
-  padding: 18px 16px 16px;
-  background: linear-gradient(180deg, #f7f2ea 0%, var(--cream) 100%);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 22px 18px 18px;
+  background: var(--surface);
 }
 
 .result-ticket__head {
@@ -14,58 +14,63 @@
 
 .result-ticket__rule {
   height: 1px;
-  background: var(--gold);
-  margin: 12px 0 14px;
-  opacity: 0.65;
+  background: var(--line);
+  margin: 14px 0 16px;
 }
 
 .result-ticket__eyebrow {
-  margin-bottom: 4px;
+  margin-bottom: 6px;
 }
 
 .result-ticket__name {
   margin: 0;
-  font-size: 1.55rem;
-  font-weight: 700;
+  font-family: var(--font-serif);
+  font-size: 1.5rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
 }
 
 .result-ticket__price {
-  margin: 4px 0 12px;
-  font-size: 1.25rem;
-  color: var(--ink-muted);
+  margin: 6px 0 14px;
+  font-size: 1.2rem;
+  color: var(--muted);
 }
 
 .result-ticket__keywords {
   list-style: none;
-  margin: 0 0 12px;
+  margin: 0 0 14px;
   padding: 0;
   display: flex;
   flex-wrap: wrap;
-  gap: 6px 12px;
+  gap: 6px 14px;
   font-family: var(--font-ui);
   font-size: 0.78rem;
-  color: var(--ink-muted);
+  color: var(--muted);
 }
 
 .result-ticket__keywords li::before {
   content: '— ';
-  color: var(--gold);
+  color: var(--ink);
 }
 
 .result-ticket__desc {
-  margin: 0 0 14px;
-  font-size: 0.95rem;
+  margin: 0 0 16px;
+  font-size: 0.92rem;
+  line-height: 1.65;
+  color: var(--ink);
 }
 
 .result-ticket__block {
-  margin-bottom: 10px;
-  padding-top: 8px;
-  border-top: 1px solid rgba(201, 169, 110, 0.35);
+  margin-bottom: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--line);
 }
 
 .result-ticket__block p:last-child {
-  margin: 4px 0 0;
-  font-size: 0.9rem;
+  margin: 6px 0 0;
+  font-size: 0.88rem;
+  color: var(--ink);
+  line-height: 1.55;
 }
 
 .result-ticket__foot {
@@ -73,20 +78,22 @@
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  margin-top: 14px;
+  margin-top: 16px;
+  padding-top: 14px;
+  border-top: 1px solid var(--line);
 }
 
 .result-ticket__stamp {
   flex-shrink: 0;
-  opacity: 0.85;
+  opacity: 0.9;
 }
 
 /* bead ring */
 .bead-ring {
   border: 1px solid var(--line);
-  border-radius: 2px;
-  padding: 8px;
-  background: #efe8dc;
+  border-radius: var(--radius);
+  padding: 12px;
+  background: var(--surface);
 }
 
 .bead-ring__center-label {
@@ -96,7 +103,11 @@
 /* controls */
 .bracelet-controls {
   display: grid;
-  gap: 16px;
+  gap: 18px;
+  padding: 18px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--surface);
 }
 
 .bracelet-controls__price {
@@ -104,12 +115,13 @@
   justify-content: space-between;
   align-items: baseline;
   border-bottom: 1px solid var(--line);
-  padding-bottom: 8px;
+  padding-bottom: 12px;
 }
 
 .bracelet-controls__amount {
   margin: 0;
-  font-size: 1.45rem;
+  font-size: 1.4rem;
+  color: var(--ink);
 }
 
 .ctrl-block {
@@ -119,7 +131,7 @@
 }
 
 .ctrl-block legend {
-  margin-bottom: 8px;
+  margin-bottom: 10px;
 }
 
 .chip-row {
@@ -135,35 +147,41 @@
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 8px 10px;
+  padding: 8px 11px;
   border: 1px solid var(--line);
-  border-radius: 2px;
-  background: transparent;
+  border-radius: var(--radius);
+  background: var(--bg);
   font-family: var(--font-ui);
   font-size: 0.72rem;
   cursor: pointer;
   color: var(--ink);
+  transition: border-color 0.2s ease, background 0.2s ease, color 0.2s ease;
+}
+
+.chip:hover {
+  border-color: var(--ink);
 }
 
 .chip.is-on {
-  border-color: var(--charcoal);
-  background: var(--charcoal);
-  color: var(--cream);
+  border-color: var(--ink);
+  background: var(--ink);
+  color: #ffffff;
 }
 
 .chip__dot {
   width: 10px;
   height: 10px;
-  border-radius: 1px;
-  border: 1px solid rgba(22, 22, 26, 0.25);
+  border-radius: 2px;
+  border: 1px solid rgba(17, 17, 17, 0.15);
 }
 
 .toggle-row {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
   font-family: var(--font-ui);
-  font-size: 0.85rem;
+  font-size: 0.86rem;
+  color: var(--ink);
 }
 
 .bracelet-controls__actions {
@@ -183,7 +201,7 @@
 .catalog__backdrop {
   position: absolute;
   inset: 0;
-  background: rgba(22, 22, 26, 0.45);
+  background: rgba(17, 17, 17, 0.28);
 }
 
 .catalog__panel {
@@ -193,9 +211,9 @@
   width: min(100%, var(--max));
   max-height: 88dvh;
   overflow: auto;
-  background: var(--cream);
-  border-top: 1px solid var(--gold);
-  padding: 16px 16px 28px;
+  background: var(--surface);
+  border-top: 1px solid var(--line);
+  padding: 18px 18px 32px;
   border-radius: 4px 4px 0 0;
 }
 
@@ -203,12 +221,17 @@
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  margin-bottom: 14px;
+  margin-bottom: 16px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--line);
 }
 
 .catalog__title {
-  margin: 4px 0 0;
-  font-size: 1.25rem;
+  margin: 6px 0 0;
+  font-family: var(--font-serif);
+  font-size: 1.2rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
 }
 
 .catalog__list {
@@ -226,24 +249,25 @@
   gap: 12px;
   align-items: center;
   text-align: left;
-  padding: 10px;
+  padding: 12px;
   border: 1px solid var(--line);
-  border-radius: 2px;
-  background: transparent;
+  border-radius: var(--radius);
+  background: var(--bg);
   cursor: pointer;
+  transition: border-color 0.2s ease;
 }
 
 .catalog-row.is-active,
 .catalog-row:hover {
-  border-color: var(--gold);
-  background: var(--cream-deep);
+  border-color: var(--ink);
+  background: var(--surface);
 }
 
 .catalog-row__swatch {
   width: 36px;
   height: 36px;
-  border-radius: 2px;
-  border: 1px solid;
+  border-radius: var(--radius);
+  border: 1px solid var(--line);
 }
 
 .catalog-row__body {
@@ -259,22 +283,23 @@
 }
 
 .catalog-row__name {
-  font-size: 0.98rem;
+  font-size: 0.95rem;
+  font-family: var(--font-serif);
 }
 
 .catalog-row__keys {
   font-family: var(--font-ui);
   font-size: 0.72rem;
-  color: var(--ink-muted);
+  color: var(--muted);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
 .catalog__note {
-  margin: 16px 0 0;
+  margin: 18px 0 0;
   font-family: var(--font-ui);
-  font-size: 0.75rem;
-  color: var(--ink-muted);
+  font-size: 0.74rem;
+  color: var(--muted);
   text-align: center;
 }
