@@ -56,7 +56,7 @@ export default function App() {
   }, []);
 
   const startCustom = useCallback(() => {
-    const gem = getGemstone('clear_crystal');
+    const gem = getGemstone('moonstone');
     setResultGem(gem);
     setBracelet(blankCustomBracelet('moonstone'));
     setBrush({ kind: 'gem', gemId: 'moonstone' });
@@ -158,7 +158,11 @@ export default function App() {
 
         {view === 'result' && resultGem && bracelet ? (
           <section className="result">
-            <ResultTicket gemstone={resultGem} />
+            <ResultTicket
+              gemstone={resultGem}
+              livePrice={calcPrice(bracelet)}
+              isCustom={bracelet.pattern === 'custom'}
+            />
             <BeadRingPreview
               config={bracelet}
               brush={brush}

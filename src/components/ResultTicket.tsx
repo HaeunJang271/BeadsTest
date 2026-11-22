@@ -3,12 +3,21 @@ import { STORE } from '../config/store';
 
 interface ResultTicketProps {
   readonly gemstone: Gemstone;
+  /** 팔찌 조합 실시간 가격 (미지정 시 원석 단가) */
+  readonly livePrice?: number;
+  readonly isCustom?: boolean;
 }
 
 /**
  * 영수증/처방전 형태의 추천 결과 티켓.
  */
-export function ResultTicket({ gemstone }: ResultTicketProps) {
+export function ResultTicket({
+  gemstone,
+  livePrice,
+  isCustom = false,
+}: ResultTicketProps) {
+  const price = livePrice ?? gemstone.price;
+
   return (
     <article className="result-ticket" aria-label="추천 결과 티켓">
       <header className="result-ticket__head">
@@ -18,9 +27,13 @@ export function ResultTicket({ gemstone }: ResultTicketProps) {
 
       <div className="result-ticket__rule" />
 
-      <p className="result-ticket__eyebrow ui-label">Recommended stone</p>
+      <p className="result-ticket__eyebrow ui-label">
+        {isCustom ? 'Custom bracelet' : 'Recommended stone'}
+      </p>
       <h2 className="result-ticket__name">{gemstone.nameKo}</h2>
-      <p className="result-ticket__price italic-num">{gemstone.price.toLocaleString('ko-KR')}원</p>
+      <p className="result-ticket__price italic-num">
+        {price.toLocaleString('ko-KR')}원
+      </p>
 
       <ul className="result-ticket__keywords">
         {gemstone.keywords.map((k) => (
