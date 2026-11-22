@@ -92,8 +92,9 @@
 .bead-ring {
   border: 1px solid var(--line);
   border-radius: var(--radius);
-  padding: 12px;
+  padding: 8px 4px;
   background: var(--surface);
+  overflow: hidden;
 }
 
 .bead-ring__center-label {
