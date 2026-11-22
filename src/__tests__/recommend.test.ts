@@ -39,7 +39,7 @@ describe('recommend', () => {
 });
 
 describe('calcPrice / sequence', () => {
-  it('단색 단일석·도넛 없으면 원석가', () => {
+  it('단색 단일석·도넛·캡 없으면 원석가', () => {
     expect(calcPrice(solid('labradorite_black'))).toBe(STORE.prices.main);
     expect(calcPrice(solid('rose_quartz'))).toBe(STORE.prices.base);
   });
@@ -52,7 +52,7 @@ describe('calcPrice / sequence', () => {
     const withCap = applyBrushToBead(
       enterCustomMode(solid('citrine')),
       0,
-      { kind: 'capOn' },
+      { kind: 'capOn', metal: 'gold' },
     );
     expect(calcPrice(withCap)).toBe(STORE.prices.custom);
 
@@ -76,35 +76,46 @@ describe('calcPrice / sequence', () => {
     expect(seq.filter((id) => id === 'peridot')).toHaveLength(3);
   });
 
-  it('프리셋·커스텀 진입 시 꽃 캡은 기본 OFF', () => {
+  it('프리셋·커스텀 기본 꽃 캡은 none', () => {
     const base = solid('moonstone', {
       secondaryId: 'citrine',
       pattern: 'accent3',
     });
-    expect(resolveSlots(base).every((s) => !s.hasFlowerCap)).toBe(true);
+    expect(resolveSlots(base).every((s) => s.flowerCap === 'none')).toBe(true);
     const custom = enterCustomMode(base);
-    expect(custom.pattern).toBe('custom');
-    expect(resolveSlots(custom).every((s) => !s.hasFlowerCap)).toBe(true);
+    expect(resolveSlots(custom).every((s) => s.flowerCap === 'none')).toBe(true);
   });
 
-  it('브러시로만 꽃 캡을 켠다', () => {
+  it('프리셋 실버 캡은 포인트 알에만', () => {
+    const cfg = solid('moonstone', {
+      secondaryId: 'citrine',
+      pattern: 'accent3',
+      presetFlowerCap: 'silver',
+    });
+    const caps = resolveSlots(cfg).filter((s) => s.flowerCap === 'silver');
+    expect(caps).toHaveLength(3);
+  });
+
+  it('브러시로 실버/골드 캡을 켠다', () => {
     const custom = enterCustomMode(solid('clear_crystal'));
-    const on = applyBrushToBead(custom, 4, { kind: 'capOn' });
-    expect(on.slots[4]?.hasFlowerCap).toBe(true);
-    expect(on.slots.filter((s) => s.hasFlowerCap)).toHaveLength(1);
+    const on = applyBrushToBead(custom, 4, { kind: 'capOn', metal: 'silver' });
+    expect(on.slots[4]?.flowerCap).toBe('silver');
+    const gold = applyBrushToBead(on, 4, { kind: 'capOn', metal: 'gold' });
+    expect(gold.slots[4]?.flowerCap).toBe('gold');
   });
 });
 
 describe('buildOrderCopy', () => {
-  it('배열·도넛·캡 정보를 포함한다', () => {
-    const cfg = enterCustomMode(
+  it('실버/골드 꽃 캡 번호를 구분해 출력한다', () => {
+    let cfg = enterCustomMode(
       solid('moonstone', { donutMetal: 'gold', donutSpacing: 'every3' }),
     );
-    const painted = applyBrushToBead(cfg, 2, { kind: 'capOn' });
-    const text = buildOrderCopy(painted, calcPrice(painted));
-    expect(text).toContain('도넛 스페이서');
-    expect(text).toContain('골드');
-    expect(text).toContain('꽃 비즈 캡');
-    expect(text).toContain('배열(1–18)');
+    cfg = applyBrushToBead(cfg, 2, { kind: 'capOn', metal: 'silver' });
+    cfg = applyBrushToBead(cfg, 5, { kind: 'capOn', metal: 'gold' });
+    const text = buildOrderCopy(cfg, calcPrice(cfg));
+    expect(text).toContain('실버 3번');
+    expect(text).toContain('골드 6번');
+    expect(text).toContain('+캡(실버)');
+    expect(text).toContain('+캡(골드)');
   });
 });

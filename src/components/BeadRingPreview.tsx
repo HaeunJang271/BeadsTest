@@ -140,7 +140,7 @@ function GemBead({
   readonly onPaint?: (index: number) => void;
 }) {
   if (placed.item.kind !== 'bead') return null;
-  const { gemId, beadIndex, hasFlowerCap } = placed.item;
+  const { gemId, beadIndex, flowerCap } = placed.item;
   const gem = getGemstone(gemId);
   const { x, y, angleDeg } = placed;
   const r = BEAD_R;
@@ -188,8 +188,14 @@ function GemBead({
         ry={r * 0.16}
         fill="rgba(255,255,255,0.45)"
       />
-      {hasFlowerCap ? (
-        <FlowerCaps x={x} y={y} angleDeg={angleDeg} uid={uid} />
+      {flowerCap !== 'none' ? (
+        <FlowerCaps
+          x={x}
+          y={y}
+          angleDeg={angleDeg}
+          uid={uid}
+          metal={flowerCap}
+        />
       ) : null}
     </g>
   );

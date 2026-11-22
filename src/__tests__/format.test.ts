@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { formatPrice, patternLabel } from '../utils/format';
+import { flowerCapLabel, formatPrice, patternLabel } from '../utils/format';
 
 describe('formatPrice', () => {
   it('천 단위 구분과 원을 붙인다', () => {
@@ -7,8 +7,11 @@ describe('formatPrice', () => {
   });
 });
 
-describe('patternLabel', () => {
-  it('패턴 한글 라벨을 반환한다', () => {
+describe('labels', () => {
+  it('패턴·꽃캡 라벨을 반환한다', () => {
     expect(patternLabel('custom')).toBe('자유 커스텀');
+    expect(flowerCapLabel('silver')).toBe('실버');
+    expect(flowerCapLabel('gold')).toBe('골드');
+    expect(flowerCapLabel('none')).toBe('없음');
   });
 });

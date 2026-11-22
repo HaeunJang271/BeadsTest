@@ -20,12 +20,13 @@ export {
   donutSpacingLabel,
   enterCustomMode,
   fillAllWithGem,
+  flowerCapMetalLabel,
   mirrorSlotsHorizontal,
   normalizeSlots,
   resolveSlots,
 } from './braceletSlots';
 
-export { buildOrderCopy, summarizeSlots } from './orderCopy';
+export { buildOrderCopy, summarizeFlowerCaps, summarizeSlots } from './orderCopy';
 
 /**
  * 빈 점수표를 만든다.

@@ -6,6 +6,7 @@ import type {
   CustomBrush,
   DonutMetal,
   DonutSpacing,
+  FlowerCapMetal,
   Gemstone,
   GemstoneId,
 } from '../types/gemstone';
@@ -14,7 +15,7 @@ import { log } from '../utils/logger';
 /**
  * accent3 패턴의 포인트 알 인덱스(12시 근처 3알).
  */
-export function accentIndices(n = STORE.beadCount): readonly number[] {
+export function accentIndices(n: number = STORE.beadCount): readonly number[] {
   return [0, 1, n - 1];
 }
 
@@ -42,17 +43,41 @@ export function buildPresetGemIds(config: BraceletConfig): GemstoneId[] {
 }
 
 /**
+ * 프리셋에서 꽃 캡을 씌울 인덱스.
+ * accent3 → 포인트 알 / 그 외 → 3알 간격.
+ */
+function presetCapIndices(
+  pattern: BraceletConfig['pattern'],
+  n: number,
+): Set<number> {
+  if (pattern === 'accent3') {
+    return new Set(accentIndices(n));
+  }
+  const set = new Set<number>();
+  for (let i = 0; i < n; i += 1) {
+    if ((i + 1) % 3 === 0) set.add(i);
+  }
+  return set;
+}
+
+/**
  * 화면에 보일 18슬롯을 만든다.
- * 꽃 캡 기본값은 모두 OFF — 커스텀 브러시로만 켠다.
+ * 커스텀은 slots, 프리셋은 presetFlowerCap으로 포인트/3알 간격에만 반영.
  */
 export function resolveSlots(config: BraceletConfig): BeadSlot[] {
   if (config.pattern === 'custom') {
     return normalizeSlots(config.slots, config.primaryId);
   }
   const gems = buildPresetGemIds(config);
-  return gems.map((gemId) => ({
+  const capMetal = config.presetFlowerCap;
+  const capped =
+    capMetal === 'none'
+      ? new Set<number>()
+      : presetCapIndices(config.pattern, gems.length);
+
+  return gems.map((gemId, index) => ({
     gemId,
-    hasFlowerCap: false,
+    flowerCap: capped.has(index) ? capMetal : 'none',
   }));
 }
 
@@ -73,10 +98,10 @@ export function normalizeSlots(
   const n = STORE.beadCount;
   const next = slots.slice(0, n).map((s) => ({
     gemId: s.gemId,
-    hasFlowerCap: s.hasFlowerCap,
+    flowerCap: s.flowerCap ?? 'none',
   }));
   while (next.length < n) {
-    next.push({ gemId: fallback, hasFlowerCap: false });
+    next.push({ gemId: fallback, flowerCap: 'none' });
   }
   return next;
 }
@@ -109,11 +134,11 @@ export function applyBrushToBead(
   if (!cur) return base;
   const next = [...slots];
   if (brush.kind === 'gem') {
-    next[index] = { gemId: brush.gemId, hasFlowerCap: cur.hasFlowerCap };
+    next[index] = { gemId: brush.gemId, flowerCap: cur.flowerCap };
   } else if (brush.kind === 'capOn') {
-    next[index] = { gemId: cur.gemId, hasFlowerCap: true };
+    next[index] = { gemId: cur.gemId, flowerCap: brush.metal };
   } else {
-    next[index] = { gemId: cur.gemId, hasFlowerCap: false };
+    next[index] = { gemId: cur.gemId, flowerCap: 'none' };
   }
   return { ...base, pattern: 'custom', slots: next };
 }
@@ -130,14 +155,14 @@ export function mirrorSlotsHorizontal(config: BraceletConfig): BraceletConfig {
   for (let i = 1; i < n / 2; i += 1) {
     const src = slots[i];
     if (!src) continue;
-    mirrored[n - i] = { gemId: src.gemId, hasFlowerCap: src.hasFlowerCap };
+    mirrored[n - i] = { gemId: src.gemId, flowerCap: src.flowerCap };
   }
   log('info', '좌우 대칭 적용');
   return { ...base, pattern: 'custom', slots: mirrored };
 }
 
 /**
- * 선택한 원석으로 18알을 채운다 (캡은 유지하지 않고 초기화).
+ * 선택한 원석으로 18알을 채운다 (캡은 초기화).
  */
 export function fillAllWithGem(
   config: BraceletConfig,
@@ -145,7 +170,7 @@ export function fillAllWithGem(
 ): BraceletConfig {
   const slots = Array.from({ length: STORE.beadCount }, () => ({
     gemId,
-    hasFlowerCap: false,
+    flowerCap: 'none' as const,
   }));
   return {
     ...config,
@@ -157,17 +182,15 @@ export function fillAllWithGem(
 }
 
 /**
- * 가격: 고유 원석 2종+ / 도넛 / (커스텀에서 꽃캡) 이면 11,900.
- * 프리셋 장식 캡만으로는 가산하지 않는다.
+ * 가격: 고유 원석 2종+ / 도넛 / 꽃캡 사용 시 11,900.
  */
 export function calcPrice(config: BraceletConfig): number {
   const slots = resolveSlots(config);
   const unique = new Set(slots.map((s) => s.gemId));
-  const customCap =
-    config.pattern === 'custom' && slots.some((s) => s.hasFlowerCap);
+  const hasCap = slots.some((s) => s.flowerCap !== 'none');
   const hasDonut = config.donutMetal !== 'none';
 
-  if (unique.size >= 2 || customCap || hasDonut) {
+  if (unique.size >= 2 || hasCap || hasDonut) {
     return STORE.prices.custom;
   }
   const only = [...unique][0] ?? config.primaryId;
@@ -180,7 +203,7 @@ export function calcPrice(config: BraceletConfig): number {
 export function defaultBracelet(gem: Gemstone): BraceletConfig {
   const slots = Array.from({ length: STORE.beadCount }, () => ({
     gemId: gem.id,
-    hasFlowerCap: false,
+    flowerCap: 'none' as const,
   }));
   return {
     primaryId: gem.id,
@@ -189,6 +212,7 @@ export function defaultBracelet(gem: Gemstone): BraceletConfig {
     slots,
     donutMetal: 'none',
     donutSpacing: 'every3',
+    presetFlowerCap: 'none',
   };
 }
 
@@ -212,6 +236,10 @@ export function donutMetalLabel(metal: DonutMetal): string {
       return _e;
     }
   }
+}
+
+export function flowerCapMetalLabel(metal: FlowerCapMetal): string {
+  return donutMetalLabel(metal);
 }
 
 export function donutSpacingLabel(spacing: DonutSpacing): string {

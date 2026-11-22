@@ -11,6 +11,7 @@ import type {
   CustomBrush,
   DonutMetal,
   DonutSpacing,
+  FlowerCapMetal,
   GemstoneId,
 } from '../types/gemstone';
 import { formatPrice, patternLabel } from '../utils/format';
@@ -27,6 +28,7 @@ interface BraceletControlsProps {
 
 const PRESETS: readonly BraceletPattern[] = ['solid', 'accent3', 'alternate'];
 const METALS: readonly DonutMetal[] = ['none', 'silver', 'gold'];
+const CAP_METALS: readonly FlowerCapMetal[] = ['none', 'silver', 'gold'];
 const SPACINGS: readonly DonutSpacing[] = ['accent', 'every3', 'all'];
 
 /**
@@ -93,10 +95,17 @@ export function BraceletControls({
             ))}
             <button
               type="button"
-              className={`chip${brush.kind === 'capOn' ? ' is-on' : ''}`}
-              onClick={() => onBrushChange({ kind: 'capOn' })}
+              className={`chip${brush.kind === 'capOn' && brush.metal === 'silver' ? ' is-on' : ''}`}
+              onClick={() => onBrushChange({ kind: 'capOn', metal: 'silver' })}
             >
-              꽃 캡 씌우기
+              꽃 캡 실버
+            </button>
+            <button
+              type="button"
+              className={`chip${brush.kind === 'capOn' && brush.metal === 'gold' ? ' is-on' : ''}`}
+              onClick={() => onBrushChange({ kind: 'capOn', metal: 'gold' })}
+            >
+              꽃 캡 골드
             </button>
             <button
               type="button"
@@ -124,22 +133,43 @@ export function BraceletControls({
           </div>
         </fieldset>
       ) : (
-        <fieldset className="ctrl-block">
-          <legend className="ui-label">보조석</legend>
-          <div className="chip-row chip-row--wrap">
-            {GEMSTONES.map((g) => (
-              <button
-                key={g.id}
-                type="button"
-                className={`chip chip--swatch${config.secondaryId === g.id ? ' is-on' : ''}`}
-                onClick={() => selectSecondary(g.id)}
-              >
-                <span className="chip__dot" style={{ background: g.visual.base }} />
-                <span>{g.nameKo.replace(' / 백수정', '')}</span>
-              </button>
-            ))}
-          </div>
-        </fieldset>
+        <>
+          <fieldset className="ctrl-block">
+            <legend className="ui-label">보조석</legend>
+            <div className="chip-row chip-row--wrap">
+              {GEMSTONES.map((g) => (
+                <button
+                  key={g.id}
+                  type="button"
+                  className={`chip chip--swatch${config.secondaryId === g.id ? ' is-on' : ''}`}
+                  onClick={() => selectSecondary(g.id)}
+                >
+                  <span className="chip__dot" style={{ background: g.visual.base }} />
+                  <span>{g.nameKo.replace(' / 백수정', '')}</span>
+                </button>
+              ))}
+            </div>
+          </fieldset>
+          <fieldset className="ctrl-block">
+            <legend className="ui-label">
+              {config.pattern === 'accent3'
+                ? '포인트 알 꽃 캡'
+                : '장식 꽃 캡 (3알 간격)'}
+            </legend>
+            <div className="chip-row chip-row--wrap">
+              {CAP_METALS.map((m) => (
+                <button
+                  key={m}
+                  type="button"
+                  className={`chip${config.presetFlowerCap === m ? ' is-on' : ''}`}
+                  onClick={() => onChange({ ...config, presetFlowerCap: m })}
+                >
+                  {m === 'none' ? '없음' : m === 'silver' ? '실버' : '골드'}
+                </button>
+              ))}
+            </div>
+          </fieldset>
+        </>
       )}
 
       <fieldset className="ctrl-block">

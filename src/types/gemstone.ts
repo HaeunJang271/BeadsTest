@@ -17,6 +17,9 @@ export type BraceletPattern = 'solid' | 'accent3' | 'alternate' | 'custom';
 
 export type DonutMetal = 'none' | 'silver' | 'gold';
 
+/** 꽃 비즈 캡 메탈 (없음 / 실버 / 골드) */
+export type FlowerCapMetal = 'none' | 'silver' | 'gold';
+
 /** 도넛 스페이서 간격 */
 export type DonutSpacing = 'accent' | 'every3' | 'all';
 
@@ -32,7 +35,7 @@ export type QuestionId =
 /** 자유 커스텀 브러시 */
 export type CustomBrush =
   | { readonly kind: 'gem'; readonly gemId: GemstoneId }
-  | { readonly kind: 'capOn' }
+  | { readonly kind: 'capOn'; readonly metal: 'silver' | 'gold' }
   | { readonly kind: 'capOff' };
 
 export interface GemstoneGradientStop {
@@ -86,7 +89,7 @@ export interface RecommendResult {
 /** 18알 슬롯 — 원석 + 꽃 비즈 캡 */
 export interface BeadSlot {
   readonly gemId: GemstoneId;
-  readonly hasFlowerCap: boolean;
+  readonly flowerCap: FlowerCapMetal;
 }
 
 export interface BraceletConfig {
@@ -96,6 +99,8 @@ export interface BraceletConfig {
   readonly slots: readonly BeadSlot[];
   readonly donutMetal: DonutMetal;
   readonly donutSpacing: DonutSpacing;
+  /** 프리셋에서 포인트(또는 3알 간격) 알에 씌울 꽃 캡 */
+  readonly presetFlowerCap: FlowerCapMetal;
 }
 
 export interface OrderCopyPayload {

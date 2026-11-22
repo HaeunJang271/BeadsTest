@@ -43,7 +43,7 @@ describe('ringLayout', () => {
     expect(CAPPED_BEAD_WIDTH).toBe(46);
 
     let cfg = enterCustomMode(defaultBracelet(getGemstone('moonstone')));
-    cfg = applyBrushToBead(cfg, 0, { kind: 'capOn' });
+    cfg = applyBrushToBead(cfg, 0, { kind: 'capOn', metal: 'silver' });
     cfg = { ...cfg, donutMetal: 'silver', donutSpacing: 'all' };
     const items = buildRingItems(cfg);
     const capped = items.find(

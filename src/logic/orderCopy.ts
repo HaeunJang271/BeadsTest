@@ -1,7 +1,7 @@
 import { STORE } from '../config/store';
 import { getGemstone } from '../data/gemstones';
 import type { BeadSlot, BraceletConfig, GemstoneId } from '../types/gemstone';
-import { patternLabel } from '../utils/format';
+import { flowerCapLabel, patternLabel } from '../utils/format';
 import {
   donutMetalLabel,
   donutSpacingLabel,
@@ -22,6 +22,22 @@ export function summarizeSlots(slots: readonly BeadSlot[]): string {
 }
 
 /**
+ * 꽃 캡 알 번호를 실버/골드로 구분해 요약한다.
+ */
+export function summarizeFlowerCaps(slots: readonly BeadSlot[]): string {
+  const silver: number[] = [];
+  const gold: number[] = [];
+  slots.forEach((s, i) => {
+    if (s.flowerCap === 'silver') silver.push(i + 1);
+    if (s.flowerCap === 'gold') gold.push(i + 1);
+  });
+  const parts: string[] = [];
+  if (silver.length) parts.push(`실버 ${silver.join(', ')}번`);
+  if (gold.length) parts.push(`골드 ${gold.join(', ')}번`);
+  return parts.length ? parts.join(' · ') : '없음';
+}
+
+/**
  * DM 주문용 복붙 문구.
  */
 export function buildOrderCopy(
@@ -29,13 +45,11 @@ export function buildOrderCopy(
   price: number,
 ): string {
   const slots = resolveSlots(config);
-  const capIdx = slots
-    .map((s, i) => (s.hasFlowerCap ? i + 1 : null))
-    .filter((v): v is number => v !== null);
 
   const sequence = slots
     .map((s, i) => {
-      const cap = s.hasFlowerCap ? '+캡' : '';
+      const cap =
+        s.flowerCap === 'none' ? '' : `+캡(${flowerCapLabel(s.flowerCap)})`;
       return `${i + 1}.${getGemstone(s.gemId).nameKo}${cap}`;
     })
     .join(' / ');
@@ -62,7 +76,7 @@ export function buildOrderCopy(
     `원석: ${stoneLine}`,
     `원석 집계: ${summarizeSlots(slots)}`,
     donutLine,
-    `꽃 비즈 캡: ${capIdx.length ? `${capIdx.join(', ')}번` : '없음'}`,
+    `꽃 비즈 캡: ${summarizeFlowerCaps(slots)}`,
     `배열(1–${STORE.beadCount}): ${sequence}`,
     `가격: ${price.toLocaleString('ko-KR')}원`,
     `스펙: 8mm 원석 / 0.8mm 투명 우레탄줄 1겹 / 꽃캡 6mm`,

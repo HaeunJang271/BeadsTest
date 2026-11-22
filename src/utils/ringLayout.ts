@@ -3,6 +3,7 @@ import type {
   BeadSlot,
   BraceletConfig,
   DonutMetal,
+  FlowerCapMetal,
   GemstoneId,
 } from '../types/gemstone';
 
@@ -29,7 +30,7 @@ export const CAPPED_BEAD_WIDTH = BEAD_WIDTH + FLOWER_CAP.capNeck * 2;
 export type RingBeadItem = {
   readonly kind: 'bead';
   readonly gemId: GemstoneId;
-  readonly hasFlowerCap: boolean;
+  readonly flowerCap: FlowerCapMetal;
   readonly width: number;
   readonly beadIndex: number;
 };
@@ -75,7 +76,7 @@ export function donutGapAfterIndices(
   const accents = new Set<number>([0, 1, n - 1]);
   if (config.pattern === 'custom') {
     resolveSlots(config).forEach((s, i) => {
-      if (s.hasFlowerCap) accents.add(i);
+      if (s.flowerCap !== 'none') accents.add(i);
     });
   }
   for (const a of accents) {
@@ -98,8 +99,8 @@ export function buildRingItems(config: BraceletConfig): RingItem[] {
     items.push({
       kind: 'bead',
       gemId: slot.gemId,
-      hasFlowerCap: slot.hasFlowerCap,
-      width: slot.hasFlowerCap ? CAPPED_BEAD_WIDTH : BEAD_WIDTH,
+      flowerCap: slot.flowerCap,
+      width: slot.flowerCap !== 'none' ? CAPPED_BEAD_WIDTH : BEAD_WIDTH,
       beadIndex: i,
     });
     if (metal !== 'none' && gaps.has(i)) {
