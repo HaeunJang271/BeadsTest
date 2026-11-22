@@ -1,9 +1,9 @@
 import { BEAD_R, FLOWER_CAP } from '../utils/ringLayout';
 
 /**
- * 비즈 겉(외곽)을 감싸는 6mm 엔틱 실버 꽃 비즈 캡 한 쌍.
- * 로컬 X = 실(접선) 방향 — rotate(angleDeg + 90).
- * 캡은 비즈 원(r=16) 밖(±outerX)에서 시작해 겉면 곡선을 따라 씌워진다.
+ * 비즈 겉 윤곽을 감싸는 6mm 엔틱 실버 꽃 비즈 캡 한 쌍.
+ * rotate(angleDeg+90) — 로컬 X = 실(접선).
+ * 캡 끝 ±outerX(21.5)는 구슬(±16) 밖 5.5px — 옆 비즈·도넛과 비겹침 폭은 ringLayout에서 확보.
  */
 export function FlowerCaps({
   x,
@@ -19,7 +19,6 @@ export function FlowerCaps({
   const { outerX } = FLOWER_CAP;
   return (
     <g transform={`translate(${x}, ${y}) rotate(${angleDeg + 90})`}>
-      {/* −X / +X 연결부 — 비즈 바깥에서 겉을 감싸는 컵 */}
       <FlowerCapCup uid={uid} along={-outerX} towardCenter={1} />
       <FlowerCapCup uid={uid} along={outerX} towardCenter={-1} />
     </g>
@@ -27,8 +26,8 @@ export function FlowerCaps({
 }
 
 /**
- * 한쪽 외곽 컵. along = 비즈 밖 실 구멍 위치.
- * towardCenter = 비즈 중심 방향(+1 또는 -1).
+ * 한쪽 꽃받침. 로컬 0 = 바깥 실 구멍(비즈 겉 밖).
+ * 비즈 표면까지 감싸되 원 안으로 파고들지 않는 입체 실루엣.
  */
 function FlowerCapCup({
   uid,
@@ -39,40 +38,35 @@ function FlowerCapCup({
   readonly along: number;
   readonly towardCenter: 1 | -1;
 }) {
-  const { halfH, wrap } = FLOWER_CAP;
-  // 로컬 0 = 바깥 실 구멍. 비즈 표면은 중심 쪽으로 (BEAD_R 거리)
-  // along=±18.5 이면 비즈 표면은 로컬 x ≈ towardCenter * (18.5 - 16) = towardCenter * 2.5
-  const surface = towardCenter * (Math.abs(along) - BEAD_R);
-  const tip = towardCenter * wrap; // 겉을 따라 감싸 들어오는 꽃잎 끝
-
-  // 왕관/꽃받침: 바깥 구멍에서 시작해 비즈 겉 곡선을 타고 Y로 벌어짐
-  const petals: readonly { y: number; midY: number; lean: number }[] = [
-    { y: -halfH, midY: -halfH * 0.55, lean: 0 },
-    { y: -halfH * 0.35, midY: -halfH * 0.15, lean: -1 },
-    { y: halfH * 0.35, midY: halfH * 0.15, lean: 1 },
-    { y: halfH, midY: halfH * 0.55, lean: 0 },
-    { y: 0, midY: 0, lean: 0 },
-  ];
+  const { halfH, outerX } = FLOWER_CAP;
+  // 비즈 겉면까지의 거리 (로컬): outerX - BEAD_R = 5.5
+  const nest = towardCenter * (outerX - BEAD_R);
+  // 겉 곡선을 타고 감싸는 꽃잎 끝 (표면 약간 안쪽 겉면, 원은 침범하지 않음)
+  const rim = towardCenter * (outerX - BEAD_R + 0.8);
 
   return (
     <g transform={`translate(${along}, 0)`}>
-      {/* 비즈 겉과 캡 사이 어두운 틈 */}
-      <ellipse
-        cx={surface * 0.55}
-        cy={0}
-        rx={Math.abs(surface) * 0.7 + 1.2}
-        ry={halfH * 0.92}
-        fill="rgba(0,0,0,0.2)"
-      />
-
-      {/* 겉면 컵 본체 — 바깥 끝 → 비즈 겉 곡선 */}
+      {/* 비즈 겉면과의 어두운 틈 */}
       <path
         d={[
-          `M 0 ${-halfH * 0.2}`,
-          `C ${towardCenter * 2} ${-halfH * 0.85}, ${surface * 0.4} ${-halfH}, ${tip} ${-halfH}`,
-          `Q ${surface * 0.9} ${-halfH * 0.35} ${surface} 0`,
-          `Q ${surface * 0.9} ${halfH * 0.35} ${tip} ${halfH}`,
-          `C ${surface * 0.4} ${halfH}, ${towardCenter * 2} ${halfH * 0.85}, 0 ${halfH * 0.2}`,
+          `M ${nest * 0.35} ${-halfH * 0.55}`,
+          `Q ${rim} ${-halfH * 0.25} ${rim} 0`,
+          `Q ${rim} ${halfH * 0.25} ${nest * 0.35} ${halfH * 0.55}`,
+          `Q ${nest * 0.15} 0 ${nest * 0.35} ${-halfH * 0.55}`,
+          `Z`,
+        ].join(' ')}
+        fill="rgba(0,0,0,0.22)"
+      />
+
+      {/* 본체 — 바깥 구멍에서 비즈 겉 곡선으로 붙는 꽃받침 컵 */}
+      <path
+        d={[
+          `M 0 ${-3.2}`,
+          `C ${towardCenter * 1.8} ${-halfH * 0.55}, ${nest * 0.45} ${-halfH}, ${rim} ${-halfH}`,
+          `Q ${rim * 0.55 + nest * 0.45} ${-halfH * 0.5} ${nest} ${-halfH * 0.15}`,
+          `L ${nest} ${halfH * 0.15}`,
+          `Q ${rim * 0.55 + nest * 0.45} ${halfH * 0.5} ${rim} ${halfH}`,
+          `C ${nest * 0.45} ${halfH}, ${towardCenter * 1.8} ${halfH * 0.55}, 0 ${3.2}`,
           `Z`,
         ].join(' ')}
         fill={`url(#${uid}-cap)`}
@@ -80,42 +74,74 @@ function FlowerCapCup({
         strokeWidth="0.5"
       />
 
-      {/* 꽃잎 갈래 — 겉에서 비즈를 덮는 왕관 */}
-      {petals.map((p, i) => (
-        <path
-          key={i}
-          d={[
-            `M 0 0`,
-            `Q ${towardCenter * 2.5 + p.lean * 2} ${p.midY} ${tip + p.lean * 1.2} ${p.y}`,
-            `Q ${surface * 0.65} ${p.y * 0.4} ${towardCenter * 1.2} 0`,
-            `Z`,
-          ].join(' ')}
-          fill={`url(#${uid}-cap)`}
-          stroke="#5A564E"
-          strokeWidth="0.45"
-          opacity={i === 4 ? 0.85 : 1}
-        />
-      ))}
+      {/* 위·아래 꽃잎 — 겉 윤곽을 따라 벌어짐 */}
+      <path
+        d={[
+          `M 0 0`,
+          `Q ${towardCenter * 2.5} ${-halfH * 0.45} ${rim} ${-halfH}`,
+          `Q ${nest * 0.7} ${-halfH * 0.35} ${towardCenter * 1.5} 0`,
+          `Z`,
+        ].join(' ')}
+        fill={`url(#${uid}-cap)`}
+        stroke="#5A564E"
+        strokeWidth="0.45"
+      />
+      <path
+        d={[
+          `M 0 0`,
+          `Q ${towardCenter * 2.5} ${halfH * 0.45} ${rim} ${halfH}`,
+          `Q ${nest * 0.7} ${halfH * 0.35} ${towardCenter * 1.5} 0`,
+          `Z`,
+        ].join(' ')}
+        fill={`url(#${uid}-cap)`}
+        stroke="#5A564E"
+        strokeWidth="0.45"
+      />
+      {/* 좌우 보조 꽃잎 */}
+      <path
+        d={[
+          `M 0 0`,
+          `Q ${towardCenter * 3 - 2.5} ${-halfH * 0.15} ${rim * 0.85} ${-halfH * 0.55}`,
+          `Q ${nest * 0.55} ${-halfH * 0.1} ${towardCenter * 1.2} 0`,
+          `Z`,
+        ].join(' ')}
+        fill={`url(#${uid}-cap)`}
+        stroke="#5A564E"
+        strokeWidth="0.4"
+        opacity="0.95"
+      />
+      <path
+        d={[
+          `M 0 0`,
+          `Q ${towardCenter * 3 + 2.5} ${halfH * 0.15} ${rim * 0.85} ${halfH * 0.55}`,
+          `Q ${nest * 0.55} ${halfH * 0.1} ${towardCenter * 1.2} 0`,
+          `Z`,
+        ].join(' ')}
+        fill={`url(#${uid}-cap)`}
+        stroke="#5A564E"
+        strokeWidth="0.4"
+        opacity="0.95"
+      />
 
-      {/* 바깥 메탈 림 + 실 구멍 */}
+      {/* 바깥 메탈 목 + 실 구멍 */}
       <ellipse
-        cx={towardCenter * 0.6}
+        cx={towardCenter * 0.5}
         cy={0}
-        rx={3.2}
-        ry={4.2}
+        rx={3.4}
+        ry={4.6}
         fill={`url(#${uid}-cap-core)`}
         stroke="#4A4640"
         strokeWidth="0.5"
       />
       <ellipse
-        cx={towardCenter * -0.4}
-        cy={-1.6}
-        rx={1.4}
-        ry={1.1}
-        fill="rgba(255,255,255,0.4)"
+        cx={towardCenter * -0.55}
+        cy={-1.8}
+        rx={1.5}
+        ry={1.15}
+        fill="rgba(255,255,255,0.42)"
       />
-      <circle cx={0} cy={0} r={1.85} fill="#2A2826" />
-      <circle cx={0} cy={0} r={1.15} fill="#1A1816" />
+      <circle cx={0} cy={0} r={1.9} fill="#2A2826" />
+      <circle cx={0} cy={0} r={1.2} fill="#1A1816" />
     </g>
   );
 }

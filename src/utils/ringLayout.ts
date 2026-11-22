@@ -12,16 +12,19 @@ export const BEAD_WIDTH = BEAD_R * 2;
 export const DONUT_WIDTH = 5.5;
 
 /**
- * 6mm 꽃 비즈 캡 — 비즈 겉(외곽)을 감싸는 컵.
- * outerX: 캡 원점(실 구멍)이 비즈 중심에서 접선 방향으로 떨어진 거리 (±15~20.5)
- * halfH: 겉면을 덮는 세로 반높이
- * wrap: 바깥 끝에서 비즈 표면 쪽으로 감싸 들어오는 깊이
+ * 6mm 꽃 비즈 캡 — 비즈 겉 윤곽을 감싸는 컵.
+ * outerX: 구슬 끝(±16)에서 바깥으로 5.5px 돌출된 캡 끝 (±21.5)
+ * halfH: r=16 바깥 곡선보다 약간 넓은 반높이
+ * capNeck: 한쪽 캡 목이 차지하는 여유 폭 → 캡 비즈 width = BEAD_WIDTH + 2*capNeck
  */
 export const FLOWER_CAP = {
-  outerX: 18.5,
-  halfH: 10,
-  wrap: 8.5,
+  outerX: 21.5,
+  halfH: 13.5,
+  capNeck: 7,
 } as const;
+
+/** 꽃 캡 비즈 슬롯 폭 (±23 확보, 옆 비즈·도넛과 비겹침) */
+export const CAPPED_BEAD_WIDTH = BEAD_WIDTH + FLOWER_CAP.capNeck * 2;
 
 export type RingBeadItem = {
   readonly kind: 'bead';
@@ -96,7 +99,7 @@ export function buildRingItems(config: BraceletConfig): RingItem[] {
       kind: 'bead',
       gemId: slot.gemId,
       hasFlowerCap: slot.hasFlowerCap,
-      width: BEAD_WIDTH,
+      width: slot.hasFlowerCap ? CAPPED_BEAD_WIDTH : BEAD_WIDTH,
       beadIndex: i,
     });
     if (metal !== 'none' && gaps.has(i)) {
