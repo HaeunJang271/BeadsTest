@@ -13,7 +13,12 @@ export type GemstoneId =
 
 export type GemstoneTier = 'main' | 'base';
 
-export type BraceletPattern = 'solid' | 'accent3' | 'alternate';
+export type BraceletPattern = 'solid' | 'accent3' | 'alternate' | 'custom';
+
+export type DonutMetal = 'none' | 'silver' | 'gold';
+
+/** 도넛 스페이서 간격 */
+export type DonutSpacing = 'accent' | 'every3' | 'all';
 
 export type AppView = 'intro' | 'quiz' | 'result' | 'catalog';
 
@@ -23,6 +28,12 @@ export type QuestionId =
   | 'color'
   | 'time'
   | 'mood';
+
+/** 자유 커스텀 브러시 */
+export type CustomBrush =
+  | { readonly kind: 'gem'; readonly gemId: GemstoneId }
+  | { readonly kind: 'capOn' }
+  | { readonly kind: 'capOff' };
 
 export interface GemstoneGradientStop {
   readonly offset: string;
@@ -53,7 +64,6 @@ export interface QuestionOption {
   readonly id: string;
   readonly label: string;
   readonly hint: string;
-  /** 선택 시 원석별 가산점 */
   readonly weights: Partial<Record<GemstoneId, number>>;
 }
 
@@ -73,17 +83,22 @@ export interface RecommendResult {
   readonly tiedIds: readonly GemstoneId[];
 }
 
+/** 18알 슬롯 — 원석 + 꽃 비즈 캡 */
+export interface BeadSlot {
+  readonly gemId: GemstoneId;
+  readonly hasFlowerCap: boolean;
+}
+
 export interface BraceletConfig {
   readonly primaryId: GemstoneId;
   readonly secondaryId: GemstoneId;
   readonly pattern: BraceletPattern;
-  readonly flowerSpacer: boolean;
+  readonly slots: readonly BeadSlot[];
+  readonly donutMetal: DonutMetal;
+  readonly donutSpacing: DonutSpacing;
 }
 
 export interface OrderCopyPayload {
-  readonly primary: Gemstone;
-  readonly secondary: Gemstone;
-  readonly pattern: BraceletPattern;
-  readonly flowerSpacer: boolean;
+  readonly config: BraceletConfig;
   readonly price: number;
 }

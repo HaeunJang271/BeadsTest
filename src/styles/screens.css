@@ -159,16 +159,14 @@
 }
 
 .calendar-banner {
-  display: grid;
-  grid-template-columns: auto 1fr auto;
-  gap: 12px;
-  align-items: center;
+  display: block;
   padding: 16px;
   border: 1px solid var(--line);
   border-radius: var(--radius);
   text-decoration: none;
   background: var(--surface);
   font-size: 0.92rem;
+  text-align: center;
   transition: border-color 0.2s ease;
 }
 

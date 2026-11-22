@@ -18,6 +18,8 @@ export function patternLabel(pattern: BraceletPattern): string {
       return '포인트 3알';
     case 'alternate':
       return '교차 배열';
+    case 'custom':
+      return '자유 커스텀';
     default: {
       const _exhaustive: never = pattern;
       return _exhaustive;

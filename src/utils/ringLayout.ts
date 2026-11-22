@@ -1,47 +1,94 @@
-import { buildBeadSequence } from '../logic/recommend';
-import type { BraceletConfig, GemstoneId } from '../types/gemstone';
+import { resolveSlots } from '../logic/braceletSlots';
+import type {
+  BeadSlot,
+  BraceletConfig,
+  DonutMetal,
+  GemstoneId,
+} from '../types/gemstone';
 
 export const BEAD_R = 16;
-/** 비즈 직경 — 맞닿는 배치의 호 길이 */
 export const BEAD_WIDTH = BEAD_R * 2;
-/** 6mm 꽃 스페이서 슬롯 폭 */
-export const SPACER_WIDTH = 12;
+/** 도넛 스페이서 두께(실 방향) */
+export const DONUT_WIDTH = 5.5;
 
 export type RingBeadItem = {
   readonly kind: 'bead';
   readonly gemId: GemstoneId;
+  readonly hasFlowerCap: boolean;
+  readonly width: number;
+  readonly beadIndex: number;
+};
+
+export type RingDonutItem = {
+  readonly kind: 'donut';
+  readonly metal: Exclude<DonutMetal, 'none'>;
   readonly width: number;
 };
 
-export type RingSpacerItem = {
-  readonly kind: 'spacer';
-  readonly width: number;
-};
-
-export type RingItem = RingBeadItem | RingSpacerItem;
+export type RingItem = RingBeadItem | RingDonutItem;
 
 export interface PlacedRingItem {
   readonly item: RingItem;
-  /** 12시 기준 라디안 각도 */
   readonly angle: number;
   readonly x: number;
   readonly y: number;
-  /** SVG rotate용 도(degree) */
   readonly angleDeg: number;
 }
 
 /**
- * 비즈 시퀀스에 꽃 스페이서 슬롯을 끼워 넣은 링 아이템 배열을 만든다.
- * 스페이서 ON이면 3알마다 슬롯 1개를 삽입한다(총 6개).
+ * 도넛을 끼울 갭(알 i 다음) 집합.
+ */
+export function donutGapAfterIndices(
+  config: BraceletConfig,
+  n: number,
+): Set<number> {
+  const gaps = new Set<number>();
+  if (config.donutMetal === 'none') return gaps;
+
+  if (config.donutSpacing === 'all') {
+    for (let i = 0; i < n; i += 1) gaps.add(i);
+    return gaps;
+  }
+  if (config.donutSpacing === 'every3') {
+    for (let i = 0; i < n; i += 1) {
+      if ((i + 1) % 3 === 0) gaps.add(i);
+    }
+    return gaps;
+  }
+
+  // accent — 포인트 알 양옆 갭 (커스텀은 꽃캡 알을 포인트로)
+  const accents = new Set<number>([0, 1, n - 1]);
+  if (config.pattern === 'custom') {
+    resolveSlots(config).forEach((s, i) => {
+      if (s.hasFlowerCap) accents.add(i);
+    });
+  }
+  for (const a of accents) {
+    gaps.add((a - 1 + n) % n);
+    gaps.add(a);
+  }
+  return gaps;
+}
+
+/**
+ * 슬롯 + 도넛을 폭 있는 링 아이템으로 펼친다.
  */
 export function buildRingItems(config: BraceletConfig): RingItem[] {
-  const beads = buildBeadSequence(config);
+  const slots: BeadSlot[] = resolveSlots(config);
+  const gaps = donutGapAfterIndices(config, slots.length);
+  const metal = config.donutMetal;
   const items: RingItem[] = [];
 
-  beads.forEach((gemId, i) => {
-    items.push({ kind: 'bead', gemId, width: BEAD_WIDTH });
-    if (config.flowerSpacer && (i + 1) % 3 === 0) {
-      items.push({ kind: 'spacer', width: SPACER_WIDTH });
+  slots.forEach((slot, i) => {
+    items.push({
+      kind: 'bead',
+      gemId: slot.gemId,
+      hasFlowerCap: slot.hasFlowerCap,
+      width: BEAD_WIDTH,
+      beadIndex: i,
+    });
+    if (metal !== 'none' && gaps.has(i)) {
+      items.push({ kind: 'donut', metal, width: DONUT_WIDTH });
     }
   });
 
@@ -49,7 +96,7 @@ export function buildRingItems(config: BraceletConfig): RingItem[] {
 }
 
 /**
- * 아이템 폭 합으로 ringR을 정하고, 누적 각도로 좌표를 배치한다.
+ * 폭 누적 각도로 배치한다.
  */
 export function placeRingItems(
   items: readonly RingItem[],

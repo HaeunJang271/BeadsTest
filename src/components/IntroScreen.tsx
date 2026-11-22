@@ -3,12 +3,17 @@ import { STORE } from '../config/store';
 interface IntroScreenProps {
   readonly onStart: () => void;
   readonly onOpenCatalog: () => void;
+  readonly onStartCustom: () => void;
 }
 
 /**
  * 첫 화면 — 편집샵 톤 인트로.
  */
-export function IntroScreen({ onStart, onOpenCatalog }: IntroScreenProps) {
+export function IntroScreen({
+  onStart,
+  onOpenCatalog,
+  onStartCustom,
+}: IntroScreenProps) {
   return (
     <section className="intro">
       <p className="ui-label intro__kicker">{STORE.instagramHandle}</p>
@@ -43,7 +48,10 @@ export function IntroScreen({ onStart, onOpenCatalog }: IntroScreenProps) {
         <button type="button" className="btn-primary" onClick={onStart}>
           추천 시작
         </button>
-        <button type="button" className="btn-secondary" onClick={onOpenCatalog}>
+        <button type="button" className="btn-secondary" onClick={onStartCustom}>
+          직접 한 알씩 커스텀
+        </button>
+        <button type="button" className="btn-ghost" onClick={onOpenCatalog}>
           9종 도감 보기
         </button>
       </div>

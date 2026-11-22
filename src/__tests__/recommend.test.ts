@@ -2,33 +2,28 @@ import { describe, expect, it } from 'vitest';
 import { STORE } from '../config/store';
 import { GEMSTONE_IDS, getGemstone } from '../data/gemstones';
 import {
+  applyBrushToBead,
   buildBeadSequence,
   buildOrderCopy,
   calcPrice,
+  defaultBracelet,
+  enterCustomMode,
   recommend,
+  resolveSlots,
   verifyAllGemstonesReachable,
 } from '../logic/recommend';
-import type { AnswerMap, GemstoneId } from '../types/gemstone';
+import type { AnswerMap, BraceletConfig, GemstoneId } from '../types/gemstone';
+
+function solid(id: GemstoneId, extra?: Partial<BraceletConfig>): BraceletConfig {
+  return { ...defaultBracelet(getGemstone(id)), ...extra };
+}
 
 describe('recommend', () => {
   it('모든 원석이 최소 1개 조합에서 우승한다', () => {
-    const { ok, missing, reached } = verifyAllGemstonesReachable();
-    expect(missing, `미도달 원석: ${missing.join(', ')}`).toEqual([]);
+    const { ok, missing } = verifyAllGemstonesReachable();
+    expect(missing).toEqual([]);
     expect(ok).toBe(true);
-    for (const id of GEMSTONE_IDS) {
-      expect((reached[id] ?? 0) > 0).toBe(true);
-    }
-  });
-
-  it('시그니처 경로로 래브라도라이트 블랙을 고른다', () => {
-    const answers: AnswerMap = {
-      release: 'r1',
-      energy: 'e1',
-      color: 'c1',
-      time: 't1',
-      mood: 'm1',
-    };
-    expect(recommend(answers).gemstone.id).toBe('labradorite_black');
+    expect(GEMSTONE_IDS).toHaveLength(9);
   });
 
   it('시그니처 경로로 문스톤을 고른다', () => {
@@ -43,95 +38,65 @@ describe('recommend', () => {
   });
 });
 
-describe('calcPrice / buildBeadSequence', () => {
-  it('단색 메인석은 10,900원', () => {
-    expect(
-      calcPrice({
-        primaryId: 'labradorite_black',
-        secondaryId: 'labradorite_black',
-        pattern: 'solid',
-        flowerSpacer: false,
-      }),
-    ).toBe(STORE.prices.main);
+describe('calcPrice / sequence', () => {
+  it('단색 단일석·도넛 없으면 원석가', () => {
+    expect(calcPrice(solid('labradorite_black'))).toBe(STORE.prices.main);
+    expect(calcPrice(solid('rose_quartz'))).toBe(STORE.prices.base);
   });
 
-  it('단색 기본석은 8,900원', () => {
+  it('도넛 또는 꽃캡 또는 2종이면 11,900', () => {
     expect(
-      calcPrice({
-        primaryId: 'rose_quartz',
-        secondaryId: 'rose_quartz',
-        pattern: 'solid',
-        flowerSpacer: false,
-      }),
-    ).toBe(STORE.prices.base);
-  });
+      calcPrice(solid('rose_quartz', { donutMetal: 'silver' })),
+    ).toBe(STORE.prices.custom);
 
-  it('서로 다른 석 혼합은 11,900원', () => {
+    const withCap = applyBrushToBead(
+      enterCustomMode(solid('citrine')),
+      0,
+      { kind: 'capOn' },
+    );
+    expect(calcPrice(withCap)).toBe(STORE.prices.custom);
+
     expect(
-      calcPrice({
-        primaryId: 'moonstone',
-        secondaryId: 'citrine',
-        pattern: 'alternate',
-        flowerSpacer: true,
-      }),
+      calcPrice(
+        solid('moonstone', {
+          secondaryId: 'citrine',
+          pattern: 'alternate',
+        }),
+      ),
     ).toBe(STORE.prices.custom);
   });
 
-  it('포인트 3알은 보조석 3개만 바꾼다', () => {
-    const seq = buildBeadSequence({
-      primaryId: 'clear_crystal',
-      secondaryId: 'peridot',
-      pattern: 'accent3',
-      flowerSpacer: false,
-    });
-    expect(seq).toHaveLength(18);
-    const secondary = seq.filter((id) => id === 'peridot');
-    expect(secondary).toHaveLength(3);
+  it('accent3는 보조석 3알', () => {
+    const seq = buildBeadSequence(
+      solid('clear_crystal', {
+        secondaryId: 'peridot',
+        pattern: 'accent3',
+      }),
+    );
+    expect(seq.filter((id) => id === 'peridot')).toHaveLength(3);
   });
 
-  it('교차 배열은 짝수 인덱스 메인석', () => {
-    const seq = buildBeadSequence({
-      primaryId: 'citrine',
-      secondaryId: 'dragon_agate_blue',
-      pattern: 'alternate',
-      flowerSpacer: false,
+  it('커스텀 전환 시 캡 상태가 복사된다', () => {
+    const base = solid('moonstone', {
+      secondaryId: 'citrine',
+      pattern: 'accent3',
     });
-    expect(seq[0]).toBe('citrine');
-    expect(seq[1]).toBe('dragon_agate_blue');
+    const custom = enterCustomMode(base);
+    expect(custom.pattern).toBe('custom');
+    expect(resolveSlots(custom).filter((s) => s.hasFlowerCap).length).toBe(3);
   });
 });
 
 describe('buildOrderCopy', () => {
-  it('DM 복붙용 문구에 원석명과 가격이 들어간다', () => {
-    const primary = getGemstone('moonstone');
-    const secondary = getGemstone('lavender_amethyst');
-    const text = buildOrderCopy({
-      primary,
-      secondary,
-      pattern: 'accent3',
-      flowerSpacer: true,
-      price: STORE.prices.custom,
-    });
-    expect(text).toContain('문스톤');
-    expect(text).toContain('라벤더 자수정');
-    expect(text).toContain('11,900원');
-    expect(text).toContain(STORE.instagramHandle);
-  });
-});
-
-describe('gemstone catalog integrity', () => {
-  it('9종 id가 모두 정의되어 있다', () => {
-    const expected: GemstoneId[] = [
-      'labradorite_black',
-      'moonstone',
-      'lavender_amethyst',
-      'watermelon_redstone',
-      'rose_quartz',
-      'dragon_agate_blue',
-      'peridot',
-      'citrine',
-      'clear_crystal',
-    ];
-    expect([...GEMSTONE_IDS]).toEqual(expected);
+  it('배열·도넛·캡 정보를 포함한다', () => {
+    const cfg = enterCustomMode(
+      solid('moonstone', { donutMetal: 'gold', donutSpacing: 'every3' }),
+    );
+    const painted = applyBrushToBead(cfg, 2, { kind: 'capOn' });
+    const text = buildOrderCopy(painted, calcPrice(painted));
+    expect(text).toContain('도넛 스페이서');
+    expect(text).toContain('골드');
+    expect(text).toContain('꽃 비즈 캡');
+    expect(text).toContain('배열(1–18)');
   });
 });

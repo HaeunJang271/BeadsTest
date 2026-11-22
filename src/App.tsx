@@ -8,7 +8,10 @@ import { QuizCard } from './components/QuizCard';
 import { ResultTicket } from './components/ResultTicket';
 import { STORE } from './config/store';
 import { QUESTIONS } from './data/questions';
+import { getGemstone } from './data/gemstones';
 import {
+  applyBrushToBead,
+  blankCustomBracelet,
   buildOrderCopy,
   calcPrice,
   defaultBracelet,
@@ -18,11 +21,11 @@ import type {
   AnswerMap,
   AppView,
   BraceletConfig,
+  CustomBrush,
   Gemstone,
   GemstoneId,
   QuestionOption,
 } from './types/gemstone';
-import { getGemstone } from './data/gemstones';
 import { log } from './utils/logger';
 
 /**
@@ -36,6 +39,10 @@ export default function App() {
   const [bracelet, setBracelet] = useState<BraceletConfig | null>(null);
   const [catalogOpen, setCatalogOpen] = useState(false);
   const [copyState, setCopyState] = useState<'idle' | 'done' | 'error'>('idle');
+  const [brush, setBrush] = useState<CustomBrush>({
+    kind: 'gem',
+    gemId: 'clear_crystal',
+  });
 
   const question = QUESTIONS[quizIndex];
 
@@ -48,6 +55,15 @@ export default function App() {
     log('info', '퀴즈 시작');
   }, []);
 
+  const startCustom = useCallback(() => {
+    const gem = getGemstone('clear_crystal');
+    setResultGem(gem);
+    setBracelet(blankCustomBracelet('clear_crystal'));
+    setBrush({ kind: 'gem', gemId: 'clear_crystal' });
+    setView('result');
+    log('info', '직접 커스텀 시작');
+  }, []);
+
   const handleSelect = useCallback(
     (option: QuestionOption) => {
       if (!question) return;
@@ -58,6 +74,7 @@ export default function App() {
         const result = recommend(nextAnswers);
         setResultGem(result.gemstone);
         setBracelet(defaultBracelet(result.gemstone));
+        setBrush({ kind: 'gem', gemId: result.gemstone.id });
         setView('result');
         return;
       }
@@ -68,15 +85,7 @@ export default function App() {
 
   const handleCopy = useCallback(async () => {
     if (!bracelet) return;
-    const primary = getGemstone(bracelet.primaryId);
-    const secondary = getGemstone(bracelet.secondaryId);
-    const text = buildOrderCopy({
-      primary,
-      secondary,
-      pattern: bracelet.pattern,
-      flowerSpacer: bracelet.flowerSpacer,
-      price: calcPrice(bracelet),
-    });
+    const text = buildOrderCopy(bracelet, calcPrice(bracelet));
     try {
       await navigator.clipboard.writeText(text);
       setCopyState('done');
@@ -92,9 +101,18 @@ export default function App() {
     const gem = getGemstone(id);
     setResultGem(gem);
     setBracelet(defaultBracelet(gem));
+    setBrush({ kind: 'gem', gemId: id });
     setCatalogOpen(false);
     setView('result');
   }, []);
+
+  const paintBead = useCallback(
+    (index: number) => {
+      if (!bracelet) return;
+      setBracelet(applyBrushToBead(bracelet, index, brush));
+    },
+    [bracelet, brush],
+  );
 
   return (
     <div className="app-shell">
@@ -123,6 +141,7 @@ export default function App() {
           <IntroScreen
             onStart={startQuiz}
             onOpenCatalog={() => setCatalogOpen(true)}
+            onStartCustom={startCustom}
           />
         ) : null}
 
@@ -140,13 +159,19 @@ export default function App() {
         {view === 'result' && resultGem && bracelet ? (
           <section className="result">
             <ResultTicket gemstone={resultGem} />
-            <BeadRingPreview config={bracelet} />
+            <BeadRingPreview
+              config={bracelet}
+              brush={brush}
+              onPaintBead={paintBead}
+            />
             <BraceletControls
               config={bracelet}
               onChange={setBracelet}
               onCopy={handleCopy}
               copyState={copyState}
               orderUrl={STORE.openChatUrl}
+              brush={brush}
+              onBrushChange={setBrush}
             />
             <a
               className="calendar-banner"
@@ -154,9 +179,7 @@ export default function App() {
               target="_blank"
               rel="noreferrer"
             >
-              <span className="ui-label">Next</span>
-              <span>2027 마녀의 달력 KST</span>
-              <span className="italic-num">open →</span>
+              함께 보기 · 2027 마녀의 달력 (KST) →
             </a>
             <p className="result__links ui-label">
               <a href={STORE.instagram} target="_blank" rel="noreferrer">
