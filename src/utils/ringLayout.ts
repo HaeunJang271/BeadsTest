@@ -11,6 +11,18 @@ export const BEAD_WIDTH = BEAD_R * 2;
 /** 도넛 스페이서 두께(실 방향) */
 export const DONUT_WIDTH = 5.5;
 
+/**
+ * 6mm 꽃 비즈 캡 — 비즈 겉(외곽)을 감싸는 컵.
+ * outerX: 캡 원점(실 구멍)이 비즈 중심에서 접선 방향으로 떨어진 거리 (±15~20.5)
+ * halfH: 겉면을 덮는 세로 반높이
+ * wrap: 바깥 끝에서 비즈 표면 쪽으로 감싸 들어오는 깊이
+ */
+export const FLOWER_CAP = {
+  outerX: 18.5,
+  halfH: 10,
+  wrap: 8.5,
+} as const;
+
 export type RingBeadItem = {
   readonly kind: 'bead';
   readonly gemId: GemstoneId;

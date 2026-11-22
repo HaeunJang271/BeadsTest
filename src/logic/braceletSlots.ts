@@ -3,7 +3,6 @@ import { getGemstone } from '../data/gemstones';
 import type {
   BeadSlot,
   BraceletConfig,
-  BraceletPattern,
   CustomBrush,
   DonutMetal,
   DonutSpacing,
@@ -43,29 +42,17 @@ export function buildPresetGemIds(config: BraceletConfig): GemstoneId[] {
 }
 
 /**
- * 프리셋에서 꽃 캡 여부 — 포인트 알 또는 3알 간격.
- */
-function presetHasCap(pattern: BraceletPattern, index: number): boolean {
-  if (pattern === 'accent3') {
-    return accentIndices().includes(index);
-  }
-  if (pattern === 'solid' || pattern === 'alternate') {
-    return (index + 1) % 3 === 0;
-  }
-  return false;
-}
-
-/**
- * 화면에 보일 18슬롯을 만든다 (프리셋은 즉석 계산, custom은 slots 사용).
+ * 화면에 보일 18슬롯을 만든다.
+ * 꽃 캡 기본값은 모두 OFF — 커스텀 브러시로만 켠다.
  */
 export function resolveSlots(config: BraceletConfig): BeadSlot[] {
   if (config.pattern === 'custom') {
     return normalizeSlots(config.slots, config.primaryId);
   }
   const gems = buildPresetGemIds(config);
-  return gems.map((gemId, index) => ({
+  return gems.map((gemId) => ({
     gemId,
-    hasFlowerCap: presetHasCap(config.pattern, index),
+    hasFlowerCap: false,
   }));
 }
 

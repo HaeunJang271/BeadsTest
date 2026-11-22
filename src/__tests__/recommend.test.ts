@@ -76,14 +76,22 @@ describe('calcPrice / sequence', () => {
     expect(seq.filter((id) => id === 'peridot')).toHaveLength(3);
   });
 
-  it('커스텀 전환 시 캡 상태가 복사된다', () => {
+  it('프리셋·커스텀 진입 시 꽃 캡은 기본 OFF', () => {
     const base = solid('moonstone', {
       secondaryId: 'citrine',
       pattern: 'accent3',
     });
+    expect(resolveSlots(base).every((s) => !s.hasFlowerCap)).toBe(true);
     const custom = enterCustomMode(base);
     expect(custom.pattern).toBe('custom');
-    expect(resolveSlots(custom).filter((s) => s.hasFlowerCap).length).toBe(3);
+    expect(resolveSlots(custom).every((s) => !s.hasFlowerCap)).toBe(true);
+  });
+
+  it('브러시로만 꽃 캡을 켠다', () => {
+    const custom = enterCustomMode(solid('clear_crystal'));
+    const on = applyBrushToBead(custom, 4, { kind: 'capOn' });
+    expect(on.slots[4]?.hasFlowerCap).toBe(true);
+    expect(on.slots.filter((s) => s.hasFlowerCap)).toHaveLength(1);
   });
 });
 
