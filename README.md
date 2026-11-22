@@ -18,7 +18,7 @@ npm run verify:reachability
 
 ## GitHub Pages
 
-`vite.config.ts`의 `base`가 `/BeadsTest/`로 설정되어 있습니다. 저장소 이름에 맞게 수정한 뒤:
+`vite.config.ts`의 `base`는 `./`(상대 경로)입니다. 필요하면 `/`로 바꿔도 됩니다.
 
 ```bash
 npm run build
